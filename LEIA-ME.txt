@@ -1,0 +1,312 @@
+ATUALIZAÇÃO 0.12.4
+Corrigida desconexão intermitente por status.json ocupado. Leitura compartilhada com troca atômica; conflitos breves são repetidos sem encerrar o treino. Bloqueios persistentes por 3 segundos ainda encerram a conexão.
+
+ARTS LMU OVERLAY — VERSÃO 0.12.3
+
+INSTALAR / ATUALIZAR
+1. Encerre a versão antiga pelo botão “Encerrar o app”.
+2. Abra Instalar-Arts-LMU-Overlay-0.12.3.exe e clique em Instalar.
+   Se baixou o ZIP do instalador, extraia-o antes.
+3. Abra pelo atalho Arts LMU OVERLAY na Área de Trabalho ou menu Iniciar.
+4. Use o LMU em janela sem bordas e entre na pista.
+
+Windows x64 e .NET Framework 4.8. Instalação por usuário, sem administrador.
+Não precisa abrir VS Code nem compilar. Use o arquivo .exe do instalador.
+A atualização mantém dimensões, posições, fontes, opacidades e calibração.
+Gráfico de 10 segundos e somente sua classe continuam ativos.
+Os fundos continuam ajustáveis. Não existe modo de demonstração no app.
+
+DELTA CENTRAL — 0.12.3
+O card mostra somente o valor e a barra. Os rótulos de referência ficam na configuração.
+Espessura da barra permite escolher de 6 a 28 px, além de Fonte e tamanho.
+Sem referência disponível, o card mostra um traço; veja a razão em Painéis.
+O delta continua comparando durante uma saída de pista ou volta invalidada.
+Voltas com falhas ou invalidação continuam impedidas de substituir a referência.
+Após F7, a cronometragem pode não corresponder à posição: inicie outra volta
+para recuperar uma comparação válida.
+Todos os cards ocultam ao sair do foco do jogo, exceto durante posicionamento.
+
+Painéis > Delta central permite escolher:
+- Melhor da sessão: sua melhor volta válida observada nesta sessão.
+- Melhor pessoal: sua melhor volta válida salva por pista, carro e categoria.
+- Última volta válida: a última volta completa válida, mesmo que seja mais lenta.
+Verde/negativo = ganhando tempo; vermelho/positivo = perdendo tempo.
+Comparação estimada na mesma distância da pista, baseada na leitura do LMU.
+Complete uma volta inteira e válida com o Arts aberto para criar a referência.
+Voltas parciais, invalidadas, com boxes ou falhas de leitura não viram referência.
+Posicionar painéis move/redimensiona o delta; Fonte e tamanho ajusta suas letras.
+Fundo 0% deixa o card transparente. A escala ± segundos só limita a barra;
+o número continua mostrando o delta completo. A posição fica salva.
+Referências pessoais: %LOCALAPPDATA%\ArthurLMUOverlay\ReferenciasDelta
+Erro ao salvar/ler aparece na configuração; Tentar novamente repete a operação.
+Não compara condições meteorológicas, combustível, pneus ou setup automaticamente.
+
+TREINO POR TRECHO — SECTOR EMBUTIDO (EXPERIMENTAL)
+1. Abra Treino por trecho > Selecionar pasta do LMU. Escolha a pasta que
+   contém Le Mans Ultimate.exe. O Arts salva esse caminho para os próximos usos.
+   Para localizar: Steam > Le Mans Ultimate > Gerenciar > Explorar arquivos locais.
+2. Com o jogo fechado, clique em Iniciar LMU sem EAC. O botão abre diretamente
+   o executável principal; não desinstala nem encerra serviços de anti-cheat.
+3. Dentro do jogo, escolha carro e pista e entre no treino OFFLINE. O Arts
+   aguarda e conecta automaticamente quando confirma uma sessão compatível.
+   A mensagem da aba informa se o modo ou a versão impedem a conexão.
+4. Com o LMU em foco e o carro na pista: F6 salva; F7 retorna ao ponto salvo.
+5. Se já abriu o LMU sem EAC por fora do Arts, use Conectar treino por trecho.
+6. Desconectar cancela a espera automática e encerra somente o módulo de treino.
+   O LMU permanece aberto. Para jogar online, desconecte o treino, feche o jogo
+   e abra normalmente pela Steam, com EAC.
+Não é necessário instalar Python nem o aplicativo Sector separadamente.
+
+BOTÕES DO VOLANTE — 0.12.3
+Na aba Treino por trecho, encontre Botões do volante.
+1. Em Salvar ponto, clique em Vincular, solte os botões e pressione o desejado.
+2. Repita em Retornar com outro botão. Não use o mesmo para as duas ações.
+3. Os vínculos são salvos. Limpar remove somente o vínculo daquela ação.
+Escolha botões livres nas configurações do jogo: o Arts não remove a função
+que o próprio jogo possa ter atribuída ao mesmo botão.
+Os comandos do Arts só atuam com treino por trecho conectado, sessão de treino
+compatível, carro na pista e LMU em foco. Abrir o jogo normalmente ou deixar
+apenas o overlay ligado não ativa os comandos. Desconectar desativa as ações.
+Manter um botão pressionado não repete a ação. Após reconectar USB, voltar do
+Alt-Tab ou conectar o treino, solte e pressione novamente. Retornar exige um
+ponto já salvo. A captura aceita botões DirectInput; eixos e POV não são botões.
+F6/F7 continuam como alternativas durante o treino. Não é instalado mapeador
+externo nem são enviadas teclas artificiais para outros aplicativos.
+
+O componente empacotado é Sector 1.0.0, host v28, para LMU build 14200 / Steam
+25661166. Outras versões, online, classificação e corrida são bloqueados.
+O delta e os demais painéis continuam disponíveis nesses modos.
+O ponto salvo NÃO persiste após fechar o jogo; vale para o carro/sessão atuais.
+As verificações originais de versão, EAC, sessão, estado e integridade permanecem.
+O jogo só é aberto quando você clica em Iniciar LMU sem EAC. O Arts não muda
+arquivos do jogo, opções da Steam ou serviços do EAC. A conexão automática vale
+somente para essa abertura solicitada; não é reativada ao reiniciar o Arts.
+Se o LMU já estiver aberto, feche-o antes de usar o botão de iniciar.
+Se a pasta mudar ou o arquivo desaparecer, selecione a pasta novamente.
+O Sector modifica o estado do carro para retornar ao ponto durante treino offline.
+Há limitações conhecidas na cronometragem, track limits e reparação de danos
+após o retorno. O Arts marca um retorno confirmado como interrupção de captura,
+para não salvar aquele trecho como referência de volta válida.
+Se F6/F7 já estiver configurado como atalho de visibilidade, escolha outro
+antes de ativar o treino (F8 é o padrão). Evite atribuir F6/F7 a comandos do jogo.
+Diagnósticos abre %LOCALAPPDATA%\ArthurLMUOverlay\TreinoSector.
+Componentes verificados são extraídos em %LOCALAPPDATA%\ArthurLMUOverlay\SectorRuntime.
+Não remova essa pasta com o LMU aberto. A desinstalação preserva referências,
+histórico, ajustes e diagnósticos.
+Projeto e licença MIT: https://github.com/sector-lmu/Sector (copyright illandiii).
+A distribuição inclui o motor original; os overlays do Sector não são abertos.
+
+VALIDAÇÃO DESTA ENTREGA
+Compilação x64, testes automatizados, persistência, desenho GDI e conteúdo do
+instalador verificados. Não foi possível executar o LMU/Windows neste ambiente.
+A integração do retorno requer validação na sua máquina e versão do jogo.
+
+NOVO VISUAL — 0.11.0
+- RPM em arco ao redor do volante, com alerta de troca.
+- Freio à esquerda e acelerador à direita; percentuais maiores e sem legendas.
+- Gráfico dos últimos 10 segundos, sem combustível neste card.
+- Combustível permanece em seu painel dedicado, ativável em Painéis.
+- Configuração organizada em Painéis, Pilotagem e Atalhos. Aprendizado continua
+  disponível na navegação lateral e no ícone junto ao relógio.
+- Lap timer e combustível destacam o valor principal; tabela com novo cabeçalho.
+
+PARA AJUSTAR
+Painéis > Fonte e tamanho altera cada card; Posicionar painéis move/redimensiona.
+Pilotagem reúne calibração, rotação do volante/carro e aviso de troca.
+Atalhos permite definir a tecla de visibilidade. A faixa inferior informa o
+estado do jogo e o salvamento automático.
+
+APRENDIZADO — INCLUÍDO NA 0.10.0
+Abra Aprendizado na configuração ou no menu do ícone perto do relógio.
+Com o Arts aberto, as voltas são gravadas automaticamente em treino,
+classificação e corrida, sozinho, com bots ou online, conforme a leitura do LMU.
+Não recupera voltas anteriores à abertura do Arts. O histórico permanece após
+fechar o aplicativo; a volta em andamento aparece quando termina ou é encerrada.
+
+1. Escolha a sessão e sua volta A no Histórico de voltas.
+2. Abra Comparar no mapa e selecione o piloto e a volta B de referência.
+   Pode ser sua melhor volta válida ou uma volta de outro piloto observado.
+3. Compare os três setores oficiais. No mapa, escolha trechos de 100, 200 ou
+   500 metros: verde/negativo é ganho de A, vermelho/positivo é perda de A.
+   O gráfico mostra também o delta acumulado e a velocidade por distância.
+4. Clique no mapa ou na tabela para selecionar um trecho. As setas também
+   selecionam trechos quando o mapa está em foco.
+
+Microsetores são ESTIMATIVAS das passagens na mesma distância, não splits
+oficiais do LMU. Atualizações online podem ser menos frequentes. Lacunas ficam
+sem dados; não são preenchidas com números inventados. Pedais dos outros
+pilotos não são coletados. A comparação é entre voltas da mesma sessão.
+Voltas invalidadas, de boxes e incompletas são identificadas. A leitura não
+informa sempre o motivo de invalidação; não atribuímos todo caso a track limits.
+Se os setores oficiais não forem publicados, eles mostram —.
+
+As gravações ficam somente neste computador:
+%LOCALAPPDATA%\ArthurLMUOverlay\Aprendizado
+Não são enviadas a nenhum servidor nem apagadas automaticamente. Para liberar
+espaço, encerre o Arts e remova somente as pastas de sessões que não quiser
+manter. Faça uma cópia dessa pasta para backup. Fechar apenas Aprendizado não
+interrompe a gravação. Encerrar o app salva as voltas incompletas observadas.
+
+PNEUS E DANOS — INCLUÍDO NA 0.10.0
+O mesmo card reúne as quatro temperaturas, pressões, pneu restante, avisos
+de furo/roda solta, dano por suspensão e dano aerodinâmico total.
+PNEU é o percentual restante: 100% = novo. SUSP. e AERO são dano:
+0% = sem dano informado. Dados indisponíveis mostram —, nunca um zero presumido.
+Suspensão e aero usam a leitura local de condição do carro. Se sua versão do
+LMU não publicar esses dados, temperatura, pressão e desgaste continuam ativos.
+As asas dianteira/traseira ainda NÃO têm leitura separada: AERO é o total.
+O aviso PEÇA SOLTA não identifica qual parte se soltou.
+
+Se você já tinha diminuído o card de pneus, o tamanho escolhido é preservado.
+Use Pneus e danos > Fonte e tamanho > Ajustar painel às letras para acomodar
+as novas informações. Depois use Posicionar painéis se precisar mover o card.
+
+VISIBILIDADE AUTOMÁTICA — 0.9.2
+- Os sete cards aparecem somente na pista, com a leitura ativa.
+- Menu, carregamento, monitor/garagem, pausa ou leitura interrompida: ocultos.
+- Ao retornar à pista, os cards reaparecem nos mesmos locais e tamanhos.
+- F8 mostra/oculta na pista. Fora dela, a tecla não muda nada nem deixa uma
+  mudança pendente. Se ocultou com F8, continuará oculto até usar F8 na pista.
+- Posicionar painéis é a exceção para editar o layout fora da pista. Concluir
+  posicionamento ou Esc volta à visibilidade automática. F8 não interrompe a edição.
+- Um card desativado continua desativado. Ocultar não apaga nem salva novas posições.
+- O atalho padrão antigo Ctrl+Alt+H passa a F8. Um atalho personalizado é
+  preservado; para trocar por F8, use Definir atalho na configuração.
+Parar o carro na pista ou nos boxes não oculta o overlay. Garagem aqui significa
+o menu/monitor de preparação, antes de entrar no modo de pilotagem.
+Se o jogo parar de atualizar sem avisar pausa, a detecção pode levar até 2 segundos.
+
+CORREÇÃO DE ABERTURA DA 0.9.1 MANTIDA
+Esta revisão recompila o aplicativo com o compilador Microsoft e as referências
+do .NET Framework 4.8, como na versão 0.8 que funcionou. O EXE da 0.9 estava
+sem o manifesto de inicialização do Windows; agora sua presença é verificada
+no arquivo final e no conteúdo do instalador.
+Os ajustes de fonte, dimensões, posição, visibilidade e volante são preservados.
+A falha específica no computador do usuário ainda precisa ser confirmada.
+
+SE AINDA NÃO ABRIR
+1. Informe se o instalador não abre ou se a instalação termina e o atalho falha.
+2. Envie uma foto da mensagem de erro, se aparecer.
+3. Se o atalho não abrir, pressione Win+R e cole:
+   %LOCALAPPDATA%\ArthurLMUOverlay\erro.txt
+   Envie o arquivo. Se o Windows disser que não existe, informe isso.
+A revisão mostra o erro de inicialização e registra em qual etapa ocorreu.
+
+MELHORIAS DA 0.9 MANTIDAS
+- Corrigida a trava que impedia diminuir os painéis abaixo do tamanho original.
+- Cada card agora tem um botão Fonte e tamanho: fonte dos textos, tamanho das
+  letras de 60 a 200%, largura e altura em pixels, todos independentes.
+- As quatro bordas e os quatro cantos mostram alças no modo Posicionar.
+- As preferências ficam salvas por painel, incluindo os quatro opcionais.
+
+COMO AJUSTAR
+1. Na configuração, encontre o card e clique em Fonte e tamanho.
+2. Escolha a fonte dos textos e o tamanho das letras. Números mantêm uma fonte
+   de largura fixa para alinhar as voltas, velocidade e demais dados.
+3. Digite largura e altura separadamente. Não existe proporção travada.
+   Ou use Posicionar painéis e arraste as alças de qualquer borda ou canto.
+4. Ajustar painel às letras dá espaço para a fonte escolhida, dentro do monitor.
+   Letras maiores também ampliam o card automaticamente quando necessário.
+5. Concluir fecha o editor. As alterações são salvas automaticamente.
+Restaurar padrão afeta apenas fonte e dimensões daquele card; não altera as
+posições, visibilidade, opacidade, atalho nem a calibração do volante.
+O texto é independente das dimensões. Em cards muito pequenos, ele se ajusta
+para caber. Para leitura maior, aumente o tamanho das letras ou ajuste o painel.
+
+MELHORIAS MANTIDAS DA 0.8
+- A descoberta/leitura do volante saiu da interface para um trabalhador
+  dedicado. Não existe mais a busca periódica de três segundos durante o desenho.
+- A gravação periódica de diagnóstico também acontece em segundo plano.
+- Letras maiores: nome/gap 20 px, posição 22 px e tempos tabulares 18 px.
+  Percentuais de pedais 26 px, velocidade 36 px e RPM 32 px, no tamanho inicial.
+- Cantos mais arredondados e fundo mais forte para contraste sobre a pista.
+- Tabela só da sua classe. Mantidos POS, +/−, GER, PILOTO/CARRO, ÚLTIMA,
+  MELHOR, PNEU, GAP GER., PEN. e BOX, na mesma ordem.
+- Lap timer, pneus, combustível e mapa são painéis opcionais.
+
+PAINÉIS ADICIONAIS
+Na configuração, marque os painéis que quiser e clique em “Posicionar painéis”.
+Eles começam desativados para você escolher onde colocá-los.
+
+Lap timer: volta atual, última, melhor, previsão e voltas completadas.
+A previsão usa o delta do LMU e não aparece se faltar a referência ou se a
+volta estiver invalidada. Uma volta inválida é identificada no rótulo ATUAL.
+
+Pneus e danos: quatro temperaturas superficiais (média dos sensores), em °C,
+pressão em bar, desgaste e danos descritos acima. A cor térmica só compara com
+a referência ideal quando o jogo fornece esse valor; caso contrário fica branca.
+
+Combustível: tanque, média por volta, autonomia e estimativas para o fim.
+A média precisa de uma volta completa observada de um cruzamento ao seguinte;
+entrar no meio da volta ainda não basta. Pit/refuel e leituras interrompidas
+não entram no consumo. “Até o fim” e “Adicionar” são estimativas sem reserva,
+não uma garantia de combustível suficiente para todas as condições de corrida.
+
+Mapa: somente sua classe, com a posição nos marcadores e você em azul.
+O desenho se forma com as posições reais recebidas durante a sessão. No início
+pode estar incompleto, sobretudo sozinho. A mensagem informa isso. Não vem
+com mapas prontos; inicia um novo traçado quando você muda de sessão/pista.
+
+Dados ausentes mostram —. Todos os painéis adicionais seguem a opacidade das
+informações, o atalho de visibilidade e a ação de posicionamento.
+
+TABELA DE PILOTOS
+Você + até três à frente + até três atrás. Se o líder estiver fora do grupo,
+é acrescentado no topo: no máximo oito linhas. As outras classes ficam ocultas.
+Sua linha é azul com borda branca. O cabeçalho mostra a melhor volta da classe,
+quem a fez e sua posição atual. Nome longo pode abreviar o primeiro nome.
+
+POS: posição na classe; GER: posição geral.
++/−: diferença desde a largada na classe; entre antes da largada para capturar
+esse dado. Treino/classificação ou entrada tardia: —.
+GAP em treino, classificação e aquecimento compara melhores voltas:
+−0,500 = piloto meio segundo mais rápido; +0,500 = meio segundo mais lento.
+Na corrida, GAP GER. mantém a diferença nativa para o líder geral.
+PEN.: pendente DT (drive-through), SG (stop-and-go), T (tempo), quando o jogo
+informa o tipo; caso contrário, quantidade. BOX indica boxes ou número de paradas.
+Bandeiras e fabricantes continuam presentes; ausências não são inventadas.
+PNEU: círculo/letra S cinza, M amarelo, H vermelho, W azul. Dois círculos quando
+dianteiro e traseiro diferem. Marcas sem logo reconhecida usam um carro genérico.
+
+PEDAIS, MOTOR E VOLANTE
+Verde: acelerador. Vermelho: freio. Histórico fixo dos últimos 10 segundos.
+No começo, preenche da esquerda para a direita; depois desliza continuamente.
+A suavização afeta só as barras e direção do modo JOGO, não as amostras do gráfico.
+RPM é o giro do motor; motor ligado continua girando com o carro parado.
+O arco de RPM ao redor do volante progride até vermelho. TROQUE avisa perto do limite; ponto ajustável.
+Limitador de velocidade dos boxes ativo deixa a marcha amarela.
+
+Se já estava calibrado, sua calibração permanece. Para calibrar novamente:
+1. Clique em Calibrar volante e escolha o dispositivo.
+2. Capture centro, depois 90° à direita, depois valide 180° à direita.
+   180° é o ponto de verificação, não um limite de movimento do desenho.
+Nos ajustes, rotação máxima do volante aceita 0 para usar a calibração ou a
+amplitude total do hardware. Rotação máxima do carro aceita 0 para usar LMU.
+Trocar volante/driver/amplitude pode exigir nova calibração.
+Se a leitura física atrasar ou ficar indisponível, o app usa a direção do jogo.
+
+POSICIONAR E CONTROLAR
+Arraste o centro de cada painel. Bordas laterais mudam largura, superior/inferior
+mudam altura, e os cantos mudam ambas sem travar a proporção. Setas movem; Shift+setas redimensionam; Esc trava.
+É possível diminuir abaixo do tamanho original. “Restaurar posições” recupera
+as posições e dimensões iniciais; fonte continua ajustável por painel.
+Travados, os cliques passam para o jogo. Só o fundo recebe a opacidade;
+letras continuam opacas. “Ajustar as duas opacidades juntas” vincula os fundos.
+
+F8: mostrar/ocultar painéis ativos na pista (configurável em Definir atalho).
+Ctrl+Alt+O: abrir configuração. Ctrl+Alt+L: posicionar/travar.
+X fecha a configuração; a visibilidade automática continua. Use Encerrar o app para sair.
+Duplo clique no ícone perto do relógio reabre; clique direito abre o menu.
+
+DIAGNÓSTICO E VERIFICAÇÃO
+A correção foi exercitada com um driver artificialmente bloqueado: o leitor
+de telemetria continuou atualizando. Também foram testados os dados e os renders.
+O LMU, o seu volante e a composição de janelas não foram executados neste
+ambiente Linux; a confirmação dentro do jogo depende do Windows.
+Se ainda houver pausas, envie diagnostico.txt e erro.txt de:
+%LOCALAPPDATA%\ArthurLMUOverlay
+A configuração fica no mesmo diretório. Não alteramos arquivos do jogo.
+
+Para remover, use Aplicativos nas Configurações do Windows. Suas configurações
+e voltas gravadas ficam preservadas. Fontes, contratos de telemetria/aprendizado/
+danos, verificação e licenças seguem no ZIP de fontes.

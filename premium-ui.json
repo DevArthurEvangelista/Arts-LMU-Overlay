@@ -1,0 +1,21 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": [
+    "src"
+  ],
+  "locale": "pt-BR",
+  "canonicalMap": "DESIGN.md",
+  "requiredCapabilities": [
+    "Form",
+    "Scrollbar",
+    "Select/Listbox"
+  ],
+  "ownership": {
+    "Form": "native",
+    "Scrollbar": "native",
+    "Select/Listbox": "native"
+  },
+  "evidence": {
+    "failurePaths": "tests/Checks.cs"
+  }
+}

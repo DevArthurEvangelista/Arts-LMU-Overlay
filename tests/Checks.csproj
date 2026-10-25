@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><EnableDefaultCompileItems>false</EnableDefaultCompileItems><NoWarn>CA1416</NoWarn></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Checks.cs"/><Compile Include="V05Checks.cs"/><Compile Include="V08Checks.cs"/><Compile Include="V09Checks.cs"/><Compile Include="V092Checks.cs"/><Compile Include="V010Checks.cs"/><Compile Include="V010DamageChecks.cs"/><Compile Include="V011DesignChecks.cs"/><Compile Include="V012Checks.cs"/><Compile Include="V0121Checks.cs"/><Compile Include="V0122Checks.cs"/><Compile Include="V0123Checks.cs"/><Compile Include="PreviewData.cs"/>
+    <Compile Include="../src/*.cs" Exclude="../src/WindowsApp.cs;../src/DeltaSettings.cs;../src/SectorSettings.cs;../src/TrainingButtonsSettings.cs;../src/SettingsDesign.cs;../src/OverlayWindow.cs;../src/AssemblyInfo.cs;../src/AppLog.cs;../src/WheelCalibrationDialog.cs;../src/PanelAppearanceDialog.cs;../src/LearningWindow.cs"/>
+    <EmbeddedResource Include="../assets/Flags.zip" LogicalName="Flags.zip"/>
+    <EmbeddedResource Include="../assets/BrandLogo.png" LogicalName="BrandLogo.png"/>
+    <EmbeddedResource Include="../assets/CarLogos.zip" LogicalName="CarLogos.zip"/>
+  </ItemGroup>
+  <ItemGroup><PackageReference Include="System.Drawing.Common" Version="6.0.0"/></ItemGroup>
+  <ItemGroup><RuntimeHostConfigurationOption Include="System.Drawing.EnableUnixSupport" Value="true"/></ItemGroup>
+</Project>

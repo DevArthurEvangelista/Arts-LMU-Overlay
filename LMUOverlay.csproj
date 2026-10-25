@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>LMUOverlay</AssemblyName>
+    <RootNamespace>Arthur.LmuOverlay</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>5</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <ApplicationIcon>assets/App.ico</ApplicationIcon>
+    <ApplicationManifest>src/app.manifest</ApplicationManifest>
+    <Version>0.12.4</Version>
+    <Description>Overlay local de pedais, motor e classificação para Le Mans Ultimate.</Description>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src/*.cs" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <EmbeddedResource Include="assets/Flags.zip" LogicalName="Flags.zip" />
+    <EmbeddedResource Include="assets/BrandLogo.png" LogicalName="BrandLogo.png" />
+    <EmbeddedResource Include="assets/CarLogos.zip" LogicalName="CarLogos.zip" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Runtime.Serialization" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

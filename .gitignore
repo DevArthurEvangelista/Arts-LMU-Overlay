@@ -1,0 +1,22 @@
+# Compilações, instaladores e caches
+[Bb]in/
+[Oo]bj/
+.vs/
+*.exe
+*.pdb
+*.user
+*.suo
+__pycache__/
+*.pyc
+Instalar-Arts-LMU-Overlay-*.exe
+SectorRuntime-1.0.0.zip
+SHA256.txt
+# Saídas dos testes; dados locais pessoais nunca entram no repositório
+tests/render-*/
+tests/arts-v09-testdata/
+# Configurações e logs locais
+config.xml
+config.xml.bak
+*.log
+TreinoSector/
+SectorRuntime/

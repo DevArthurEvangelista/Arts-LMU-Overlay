@@ -1,0 +1,25 @@
+CAR LOGOS — Arts LMU OVERLAY 0.7
+
+Manufacturer logos are used only to identify cars in the local racing overlay.
+Names and trademarks remain the property of their respective owners.
+Arts LMU OVERLAY is an independent personal application, not affiliated with
+or endorsed by Le Mans Ultimate or any of the manufacturers shown.
+
+Porsche, Ferrari, BMW, Mercedes, Aston Martin, McLaren, Ford, Chevrolet,
+Toyota, Peugeot, Lamborghini and Cadillac icon vectors:
+Simple Icons v11.15.0, https://github.com/simple-icons/simple-icons/tree/11.15.0/icons
+CC0-1.0 dedication for the icon collection: see SimpleIcons-CC0.txt.
+The collection's dedication does not grant trademark rights.
+Vectors were rasterized in a compact, brand-colored palette for a recognizable
+colored display in the dark, small overlay. The original SVGs remain alongside
+the PNGs for traceability; the palette is an overlay treatment, not a claim
+that every manufacturer mark has only one official color.
+
+Alpine and Lexus raster logo files, unchanged:
+https://github.com/filippofilip95/car-logos-dataset
+logos/optimized/alpine.png and logos/optimized/lexus.png (retrieved 2026-09-13).
+Underlying marks and artwork remain owned by their respective manufacturers;
+no open-source license or endorsement for these two marks is asserted here.
+
+The personal Arts logo was supplied by the user and remains unchanged.
+The steering-wheel drawing has no Porsche badge.
