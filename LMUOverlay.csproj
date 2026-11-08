@@ -9,7 +9,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <ApplicationIcon>assets/App.ico</ApplicationIcon>
     <ApplicationManifest>src/app.manifest</ApplicationManifest>
-    <Version>0.12.5</Version>
+    <Version>0.12.6</Version>
     <Description>Overlay local de pedais, motor e classificação para Le Mans Ultimate.</Description>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>true</Deterministic>
@@ -17,7 +17,7 @@
   <ItemGroup>
     <Compile Include="src/*.cs" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Speech" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <Reference Include="System.IO.Compression" />
     <EmbeddedResource Include="assets/Flags.zip" LogicalName="Flags.zip" />
     <EmbeddedResource Include="assets/BrandLogo.png" LogicalName="BrandLogo.png" />
