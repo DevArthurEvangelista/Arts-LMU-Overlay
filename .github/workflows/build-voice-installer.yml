@@ -1,0 +1,52 @@
+name: Build complete voice installer
+on:
+  push:
+    branches: [feat/voice-chat-online]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile Arts
+        shell: pwsh
+        run: |
+          dotnet build LMUOverlay.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Compilation failed' }
+          Copy-Item bin/Release/net48/LMUOverlay.exe ./LMUOverlay.exe
+          Copy-Item bin/Release/net48/NAudio*.dll ./
+      - name: Build Whisper for Windows
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch v1.9.5 https://github.com/ggml-org/whisper.cpp.git whisper-src
+          cmake -S whisper-src -B whisper-src/build -A x64 -DWHISPER_BUILD_TESTS=OFF -DWHISPER_BUILD_EXAMPLES=ON
+          cmake --build whisper-src/build --config Release --target whisper-cli
+          New-Item -ItemType Directory -Force Whisper | Out-Null
+          $cli = Get-ChildItem whisper-src/build -Recurse -Filter whisper-cli.exe | Select-Object -First 1
+          if (!$cli) { throw 'Whisper CLI missing' }
+          Copy-Item $cli.FullName Whisper/whisper-cli.exe
+          Get-ChildItem whisper-src/build -Recurse -Filter '*.dll' | Where-Object { $_.FullName -match 'bin.*Release' } | ForEach-Object { Copy-Item $_.FullName Whisper/ }
+          if (!(Get-ChildItem Whisper -Filter '*.dll')) { throw 'Whisper DLLs missing' }
+      - name: Bundle English model
+        shell: pwsh
+        run: |
+          Invoke-WebRequest 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin' -OutFile Whisper/ggml-small.en.bin
+          $hash = (Get-FileHash Whisper/ggml-small.en.bin -Algorithm SHA1).Hash.ToLowerInvariant()
+          if ($hash -ne 'db8a495a91d927739e50b3fc1cc4c6b8f6c2d022') { throw "Model hash mismatch: $hash" }
+      - name: Make installer
+        shell: pwsh
+        run: |
+          choco install nsis -y --no-progress
+          & 'C:\Program Files (x86)\NSIS\makensis.exe' /V2 /WX installer/Setup.nsi
+          if ($LASTEXITCODE -ne 0) { throw 'NSIS failed' }
+          if (!(Test-Path Instalar-Arts-LMU-Overlay-0.12.6.exe)) { throw 'Installer missing' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Arts-LMU-Overlay-0.12.6-Instalador-Completo
+          path: Instalar-Arts-LMU-Overlay-0.12.6.exe
+          if-no-files-found: error
+          compression-level: 0
