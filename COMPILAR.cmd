@@ -1,17 +1,15 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-set "LMU_CSC=%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
-if not exist "%LMU_CSC%" (
-  echo Compilador do .NET Framework nao encontrado. Requer Windows x64 com .NET Framework 4.8.
-  pause
-  exit /b 1
-)
-"%LMU_CSC%" /nologo /target:winexe /platform:x64 /optimize+ /codepage:65001 /win32icon:assets\App.ico /win32manifest:src\app.manifest /out:LMUOverlay.exe /resource:assets\Flags.zip,Flags.zip /resource:assets\BrandLogo.png,BrandLogo.png /resource:assets\CarLogos.zip,CarLogos.zip /r:System.Speech.dll /r:System.IO.Compression.dll /r:System.dll /r:System.Core.dll /r:System.Xml.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll /r:System.Runtime.Serialization.dll src\*.cs
+where dotnet >nul 2>nul
 if errorlevel 1 (
-  echo A compilacao falhou.
-  pause
-  exit /b 1
+ echo Instale o SDK .NET com suporte ao .NET Framework 4.8.
+ pause
+ exit /b 1
 )
-echo LMUOverlay.exe compilado.
+dotnet build LMUOverlay.csproj -c Release
+if errorlevel 1 (pause & exit /b 1)
+copy /y "bin\Release\net48\LMUOverlay.exe" "LMUOverlay.exe" >nul
+copy /y "bin\Release\net48\NAudio*.dll" . >nul
+echo Compilacao concluida. Para instalar, use NSIS em installer\Setup.nsi.
 pause
