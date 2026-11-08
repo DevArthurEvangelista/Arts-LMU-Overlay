@@ -1,12 +1,12 @@
-# Teste do chat por voz — 0.12.5 (experimental)
+# Chat por voz 0.12.6 — versão experimental
 
-Este é um pacote de código-fonte para compilar no Windows; **não contém um EXE 0.12.5 validado**.
+O Arts agora permite escolher um microfone, um idioma e um modelo Whisper local. Esta branch não foi compilada ou testada no Windows/LMU neste ambiente; não substitua a versão estável antes do teste.
 
-1. Compile com `COMPILAR.cmd` ou `dotnet build LMUOverlay.csproj -c Release`. O Windows precisa ter reconhecimento de fala em português instalado e microfone padrão funcional. Se a compilação reclamar de `System.Speech`, instale o .NET Framework 4.8 Developer Pack.
-2. No LMU, configure a função **Realtime Chat** para **Enter**. Abra o jogo normalmente pela Steam com o EAC para jogar online. Feche o campo de chat antes de testar.
-3. No Arts, vá em **Atalhos > Falar no chat do LMU**, vincule um botão livre do volante e ative **envio automático**.
-4. Em uma sessão privada de teste ou treino com chat permitido, mantenha o LMU em primeiro plano, segure o botão, fale uma frase curta em português e solte. O Arts tentará abrir o chat, digitar a transcrição e enviá-la.
+1. Instale o SDK .NET para compilar net48 e execute `COMPILAR.cmd` (o projeto restaura NAudio 2.2.1 pelo NuGet).
+2. Baixe uma compilação Windows x64 de `whisper-cli.exe` do projeto oficial `ggml-org/whisper.cpp` (inclua as DLLs distribuídas com ele na mesma pasta). Obtenha separadamente o modelo `ggml-small.en.bin` (inglês, ~466 MiB) ou `ggml-base.en.bin` (~142 MiB) de `ggerganov/whisper.cpp` no Hugging Face. Para português use um modelo multilíngue `ggml-small.bin` ou `ggml-base.bin`, não `.en`. O app não baixa o modelo automaticamente.
+3. No Arts, em Atalhos > Falar no chat, escolha seu microfone, indique o caminho de `whisper-cli.exe` e do modelo `.bin`, escolha Inglês/Português, vincule um botão livre e ative o envio.
+4. No LMU, vincule Realtime Chat à tecla Enter e deixe o campo fechado. Com LMU em primeiro plano, segure o botão, fale, solte. O app cria áudio temporário local de até 12 s, executa Whisper em segundo plano e apaga WAV e TXT depois; se o foco mudar, não envia.
 
-A função foi preparada para teste, mas não foi compilada nem verificada neste ambiente Windows/LMU. Não foi possível confirmar se o LMU aceita `SendInput` Unicode no campo de chat; se não aceitar, precisaremos ajustar o método de inserção. O app não injeta DLL no jogo e não mexe no EAC. A função não verifica as regras de chat de cada evento. Respeite as regras da sessão em que estiver jogando.
+A inferência pode demorar alguns segundos. O chat do LMU ainda precisa ser validado em Windows com microfone/volante real; `SendInput` Unicode pode não ser aceito pelo jogo. Este recurso não usa nem altera o Sector ou o EAC. Verifique as regras de chat do evento online.
 
-**Feedback útil:** versão do Windows, idioma do reconhecimento instalado, se o botão foi reconhecido, se o chat abriu, se o texto apareceu, se Enter enviou e se acentos foram aceitos. Se a configuração do chat já estiver aberta antes de soltar, feche-a e tente de novo.
+Referências oficiais: https://github.com/ggml-org/whisper.cpp e https://huggingface.co/ggerganov/whisper.cpp
