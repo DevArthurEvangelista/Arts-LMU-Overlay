@@ -73,6 +73,11 @@ Section "Arts LMU OVERLAY" SEC_MAIN
   SetOverwrite on
   File "../LMUOverlay.exe"
   File "../NAudio*.dll"
+  SetOutPath "$INSTDIR\Whisper"
+  File "../Whisper/whisper-cli.exe"
+  File "../Whisper/*.dll"
+  File "../Whisper/ggml-small.en.bin"
+  SetOutPath "$INSTDIR"
   File "../LMUOverlay.exe.config"
   File "../assets/SectorRuntime-1.0.0.zip"
   File "../LEIA-ME.txt"
