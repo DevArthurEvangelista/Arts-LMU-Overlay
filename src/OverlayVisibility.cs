@@ -27,7 +27,7 @@ namespace Arthur.LmuOverlay
             ManuallyHidden=!ManuallyHidden;return true;
         }
 
-        public bool ShouldShow(bool enabled,Frame frame,double now,bool positioning,bool gameForeground=true)
-        { return enabled && (positioning || (gameForeground && !ManuallyHidden && OnTrack(frame,now))); }
+        public bool ShouldShow(bool enabled,Frame frame,double now,bool positioning,bool gameForeground=true,bool controllerForeground=false)
+        { return enabled && (positioning || ((gameForeground || controllerForeground) && !ManuallyHidden && OnTrack(frame,now))); }
     }
 }

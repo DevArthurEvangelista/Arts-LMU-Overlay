@@ -8,7 +8,7 @@ namespace Arthur.LmuOverlay
  public sealed partial class Controller
  {
   readonly VoiceDictation voiceDictation=new VoiceDictation();
-  Label voiceState;ComboBox voiceMicrophone;TextBox whisperExecutable,whisperModel;ComboBox voiceLanguage;bool voiceReleased,voiceCapturing,voicePreviouslyDown,voiceRecordingWasValid,voiceStartedWithKeyboard;double voiceCaptureUntil,voiceStarted,voiceStatusUntil;
+  Label voiceState;ComboBox voiceMicrophone;TextBox whisperExecutable,whisperModel;ComboBox voiceLanguage;bool voiceReleased,voiceCapturing,voicePreviouslyDown,voiceRecordingWasValid,voiceStartedWithKeyboard,voiceStopRequested,voiceStopStalled;double voiceCaptureUntil,voiceStarted,voiceStopAt;
   [DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
   static bool Held(int key){return key>0&&(GetAsyncKeyState(key)&0x8000)!=0;}
   bool VoiceKeyboardDown()
@@ -19,14 +19,20 @@ namespace Arthur.LmuOverlay
    return ctrl==((mods&2)!=0)&&alt==((mods&1)!=0)&&shift==((mods&4)!=0);
   }
   void ShowVoice(string title,string detail,Color color,double seconds)
-  {voiceOverlay.Display(title,detail,color);voiceStatusUntil=seconds>0?Now+seconds:0;UpdateVoiceState(title+" • "+detail);}
+  {voiceOverlay.Display(title,detail,color,seconds);UpdateVoiceState(title+" • "+detail);}
+  void VoiceOverlayExpired(string previous)
+  {
+   voiceRecordingWasValid=false;
+   if(previous=="Ouvindo"&&voiceDictation.Recording){voiceStopRequested=true;voiceStopAt=Now;voiceDictation.Cancel();}
+   UpdateVoiceState(previous=="Ouvindo"?"Gravação encerrada: jogo sem foco ou tempo esgotado.":"Transcrição interrompida: jogo sem foco ou limite de tempo.");
+  }
   void BuildVoiceChatSettings(SettingsPage page)
   {
    var card=new SettingsCard{Height=590,Margin=new Padding(0,0,0,16)};page.Controls.Add(card);
    var flow=new FlowLayoutPanel{Dock=DockStyle.Fill,FlowDirection=FlowDirection.TopDown,WrapContents=false,BackColor=Theme.Surface};card.Controls.Add(flow);
    var title=Label("Falar no chat do LMU",30);title.Font=new Font(Theme.BodyFont,13,FontStyle.Bold);flow.Controls.Add(title);
    var hint=Label("Segure o botão do volante ou a tecla vinculada, fale e solte. O indicador aparece na pista. Configure Realtime Chat do LMU para Enter.",68);flow.Controls.Add(hint);
-   flow.Controls.Add(Check("Ativar envio automático",settings.VoiceChatEnabled,v=>{settings.VoiceChatEnabled=v;if(!v)voiceDictation.Cancel();Changed();}));
+   flow.Controls.Add(Check("Ativar envio automático",settings.VoiceChatEnabled,v=>{settings.VoiceChatEnabled=v;if(!v){voiceRecordingWasValid=false;voiceDictation.Cancel();voiceOverlay.Clear();}Changed();}));
    var micLabel=Label("Microfone",25);flow.Controls.Add(micLabel);
    voiceMicrophone=new ComboBox{DropDownStyle=ComboBoxStyle.DropDownList,Width=470};flow.Controls.Add(voiceMicrophone);
    try{foreach(string item in VoiceDictation.Microphones())voiceMicrophone.Items.Add(item);int index=settings.VoiceMicrophone+1;voiceMicrophone.SelectedIndex=index>=0&&index<voiceMicrophone.Items.Count?index:0;}
@@ -65,7 +71,6 @@ namespace Arthur.LmuOverlay
   void UpdateVoiceState(string message){if(voiceState!=null)voiceState.Text=(settings.VoiceChatButton==null?"Sem botão":settings.VoiceChatButton.ToString())+" / "+(settings.VoiceChatKey==0?"sem tecla":KeyCapture.Display(settings.VoiceChatKey,settings.VoiceChatModifiers))+" • "+message;}
   void PollVoiceChat(double now)
   {
-   if(voiceStatusUntil>0&&now>=voiceStatusUntil){voiceStatusUntil=0;voiceOverlay.Clear();}
    var buttons=wheel.ReadButtons(now);
    if(voiceCapturing){
     if(now>voiceCaptureUntil){voiceCapturing=false;UpdateVoiceState("Tempo esgotado.");}
@@ -80,12 +85,21 @@ namespace Arthur.LmuOverlay
    bool wheelDown=found&&buttons.Any(b=>settings.VoiceChatButton.Matches(b)&&b.Pressed);
    bool keyDown=VoiceKeyboardDown(),down=wheelDown||keyDown;
    if(voiceDictation.Recording){
-    if(!active||(!voiceStartedWithKeyboard&&!found)||now-voiceStarted>12){voiceRecordingWasValid=false;voiceDictation.Cancel();ShowVoice("Gravação cancelada","Foco, dispositivo ou limite de 12 segundos.",Color.OrangeRed,5);}
-    else if(!(voiceStartedWithKeyboard?keyDown:wheelDown)){voiceRecordingWasValid=true;voiceDictation.Stop();ShowVoice("Transcrevendo","Aguarde o reconhecimento da fala.",Color.DeepSkyBlue,0);}
+    if(voiceStopRequested){
+     if(!voiceStopStalled&&now-voiceStopAt>3){voiceStopStalled=true;voiceRecordingWasValid=false;voiceDictation.Cancel();
+      if(IsGameForeground(Win32.GetForegroundWindow(),now))ShowVoice("Falha na captura","O microfone não encerrou a gravação.",Color.OrangeRed,5);}
+    }
+    else if(!active||(!voiceStartedWithKeyboard&&!found)||now-voiceStarted>12){
+     voiceRecordingWasValid=false;voiceStopRequested=true;voiceStopAt=now;voiceDictation.Cancel();
+     if(IsGameForeground(Win32.GetForegroundWindow(),now))ShowVoice("Gravação cancelada","Foco, dispositivo ou limite de 12 segundos.",Color.OrangeRed,5);else voiceOverlay.Clear();
+    }
+    else if(!(voiceStartedWithKeyboard?keyDown:wheelDown)){
+     voiceRecordingWasValid=true;voiceStopRequested=true;voiceStopAt=now;voiceDictation.Stop();ShowVoice("Transcrevendo","Aguarde o reconhecimento da fala.",Color.DeepSkyBlue,0);
+    }
    }else if(active&&down&&!voicePreviouslyDown){
     voiceDictation.ExecutablePath=settings.VoiceWhisperExecutable;voiceDictation.ModelPath=settings.VoiceWhisperModel;voiceDictation.Microphone=settings.VoiceMicrophone;voiceDictation.Language=settings.VoiceLanguage;
-    voiceRecordingWasValid=false;voiceStartedWithKeyboard=keyDown;
-    if(voiceDictation.Start()){voiceStarted=now;ShowVoice("Ouvindo","Fale agora; solte para enviar.",Color.FromArgb(94,201,255),0);}
+    voiceRecordingWasValid=false;voiceStopRequested=voiceStopStalled=false;voiceStartedWithKeyboard=keyDown;
+    if(voiceDictation.Start()){voiceStarted=now;ShowVoice("Ouvindo",voiceStartedWithKeyboard?"Segure "+KeyCapture.Display(settings.VoiceChatKey,settings.VoiceChatModifiers)+"; solte para enviar.":"Segure o botão do volante; solte para enviar.",Color.FromArgb(94,201,255),0);}
    }
    voicePreviouslyDown=active&&down;
   }

@@ -218,6 +218,8 @@ namespace Arthur.LmuOverlay
         public Controller()
         {
             settings=AppSettings.Load(out startupWarning);
+            voiceOverlay.ShouldRemainVisible=()=>IsGameForeground(Win32.GetForegroundWindow(),Now)&&OverlayVisibility.OnTrack(Current,Now);
+            voiceOverlay.Expired+=VoiceOverlayExpired;
             if(string.IsNullOrWhiteSpace(settings.VoiceWhisperExecutable))settings.VoiceWhisperExecutable=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Whisper","whisper-cli.exe");
             if(string.IsNullOrWhiteSpace(settings.VoiceWhisperModel))settings.VoiceWhisperModel=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Whisper","ggml-small.en.bin");
             settings.Appearance=PanelAppearance.NormalizeAll(settings.Appearance);
@@ -333,11 +335,13 @@ namespace Arthur.LmuOverlay
         void ApplyVisibility()
         {
             double now=Now;bool editing=positioning.Checked;
-            bool gameFocused=IsGameForeground(Win32.GetForegroundWindow(),now);
-            pedals.SetRequestedVisibility(appearancePanelIndex==0 || visibility.ShouldShow(settings.ShowPedals,Current,now,editing,gameFocused));
-            table.SetRequestedVisibility(appearancePanelIndex==1 || visibility.ShouldShow(settings.ShowTable,Current,now,editing,gameFocused));
+            IntPtr foreground=Win32.GetForegroundWindow();
+            bool gameFocused=IsGameForeground(foreground,now);
+            bool controllerFocused=foreground==Handle || (appearanceDialog!=null && foreground==appearanceDialog.Handle);
+            pedals.SetRequestedVisibility(appearancePanelIndex==0 || visibility.ShouldShow(settings.ShowPedals,Current,now,editing,gameFocused,controllerFocused));
+            table.SetRequestedVisibility(appearancePanelIndex==1 || visibility.ShouldShow(settings.ShowTable,Current,now,editing,gameFocused,controllerFocused));
             for(int i=0;i<extras.Length;i++)
-                extras[i].SetRequestedVisibility(appearancePanelIndex==i+2 || visibility.ShouldShow(settings.Widgets[i].Visible,Current,now,editing,gameFocused));
+                extras[i].SetRequestedVisibility(appearancePanelIndex==i+2 || visibility.ShouldShow(settings.Widgets[i].Visible,Current,now,editing,gameFocused,controllerFocused));
             trayVisibility.Enabled=visibility.CanToggle(Current,now,editing);
             trayVisibility.Text=editing ? "Conclua o posicionamento para ocultar" :
                 !trayVisibility.Enabled ? "Mostrar / ocultar: disponível na pista" :

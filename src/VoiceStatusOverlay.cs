@@ -10,6 +10,10 @@ namespace Arthur.LmuOverlay
     {
         string heading="",detail="";
         Color accent=Color.DeepSkyBlue;
+        readonly Timer watchdog=new Timer { Interval=200 };
+        DateTime expires=DateTime.MinValue;
+        public Func<bool> ShouldRemainVisible;
+        public event Action<string> Expired;
         public VoiceStatusOverlay()
         {
             FormBorderStyle=FormBorderStyle.None;
@@ -20,15 +24,27 @@ namespace Arthur.LmuOverlay
             BackColor=Color.FromArgb(17,24,33);
             ForeColor=Color.White;
             DoubleBuffered=true;
+            watchdog.Tick+=delegate
+            {
+                if(!Visible) return;
+                if((ShouldRemainVisible!=null&&!ShouldRemainVisible()) || DateTime.UtcNow>=expires)
+                {
+                    string previous=heading;Clear();
+                    var handler=Expired;if(handler!=null&&(previous=="Ouvindo"||previous=="Transcrevendo")) handler(previous);
+                }
+            };
+            watchdog.Start();
         }
         protected override bool ShowWithoutActivation { get { return true; } }
         protected override CreateParams CreateParams
         {
             get { var p=base.CreateParams; p.ExStyle|=0x80|0x20|0x08000000; return p; }
         }
-        public void Display(string title,string description,Color color)
+        public void Display(string title,string description,Color color,double durationSeconds)
         {
             heading=title;detail=description;accent=color;
+            // The HUD owns its lifetime even if the main telemetry timer stalls.
+            expires=DateTime.UtcNow.AddSeconds(durationSeconds>0?durationSeconds:title=="Ouvindo"?14:95);
             var foreground=Win32.GetForegroundWindow();
             var area=foreground==IntPtr.Zero ? Screen.PrimaryScreen.WorkingArea : Screen.FromHandle(foreground).WorkingArea;
             Location=new Point(area.Left+(area.Width-Width)/2,area.Bottom-Height-92);
@@ -36,6 +52,7 @@ namespace Arthur.LmuOverlay
             Invalidate();
         }
         public void Clear() { if(Visible) Hide(); }
+        protected override void Dispose(bool disposing) { if(disposing) watchdog.Dispose();base.Dispose(disposing); }
         protected override void OnPaint(PaintEventArgs e)
         {
             var g=e.Graphics;g.SmoothingMode=SmoothingMode.AntiAlias;
