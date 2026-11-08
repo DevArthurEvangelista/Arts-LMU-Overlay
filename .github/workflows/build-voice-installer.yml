@@ -39,6 +39,13 @@ jobs:
           Invoke-WebRequest 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en.bin' -OutFile Whisper/ggml-small.en.bin
           $hash = (Get-FileHash Whisper/ggml-small.en.bin -Algorithm SHA1).Hash.ToLowerInvariant()
           if ($hash -ne 'db8a495a91d927739e50b3fc1cc4c6b8f6c2d022') { throw "Model hash mismatch: $hash" }
+      - name: Smoke test bundled speech recognition
+        shell: pwsh
+        run: |
+          & Whisper/whisper-cli.exe -m Whisper/ggml-small.en.bin -f whisper-src/samples/jfk.wav -l en -otxt -of Whisper/smoke -np
+          if ($LASTEXITCODE -ne 0) { throw 'Whisper failed to run on Windows' }
+          if (!(Test-Path Whisper/smoke.txt) -or (Get-Item Whisper/smoke.txt).Length -lt 10) { throw 'Whisper produced no transcript' }
+          Remove-Item Whisper/smoke.txt
       - name: Make installer
         shell: pwsh
         run: |
@@ -51,10 +58,10 @@ jobs:
           Set-Content installer/Setup-ci.nsi $script -Encoding UTF8
           & 'C:\Program Files (x86)\NSIS\makensis.exe' /V2 /WX installer/Setup-ci.nsi
           if ($LASTEXITCODE -ne 0) { throw 'NSIS failed' }
-          if (!(Test-Path Instalar-Arts-LMU-Overlay-0.12.6.exe)) { throw 'Installer missing' }
+          if (!(Test-Path Instalar-Arts-LMU-Overlay-0.12.7.exe)) { throw 'Installer missing' }
       - uses: actions/upload-artifact@v4
         with:
-          name: Arts-LMU-Overlay-0.12.6-Instalador-Completo
-          path: Instalar-Arts-LMU-Overlay-0.12.6.exe
+          name: Arts-LMU-Overlay-0.12.7-Instalador-Completo
+          path: Instalar-Arts-LMU-Overlay-0.12.7.exe
           if-no-files-found: error
           compression-level: 0

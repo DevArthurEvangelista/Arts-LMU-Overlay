@@ -8,7 +8,7 @@ namespace Arthur.LmuOverlay
 {
     public static class AppInfo
     {
-        public const string Name="Arts LMU OVERLAY", Version="0.12.6", AssemblyVersion="0.12.6.0";
+        public const string Name="Arts LMU OVERLAY", Version="0.12.7", AssemblyVersion="0.12.7.0";
     }
     public static class BrandArtwork
     {

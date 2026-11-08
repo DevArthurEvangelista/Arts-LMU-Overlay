@@ -1,19 +1,31 @@
 using System;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 namespace Arthur.LmuOverlay
 {
  public sealed partial class Controller
  {
   readonly VoiceDictation voiceDictation=new VoiceDictation();
-  Label voiceState;ComboBox voiceMicrophone;TextBox whisperExecutable,whisperModel;ComboBox voiceLanguage;bool voiceReleased,voiceCapturing,voicePreviouslyDown,voiceRecordingWasValid;double voiceCaptureUntil,voiceStarted;
+  Label voiceState;ComboBox voiceMicrophone;TextBox whisperExecutable,whisperModel;ComboBox voiceLanguage;bool voiceReleased,voiceCapturing,voicePreviouslyDown,voiceRecordingWasValid,voiceStartedWithKeyboard;double voiceCaptureUntil,voiceStarted,voiceStatusUntil;
+  [DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
+  static bool Held(int key){return key>0&&(GetAsyncKeyState(key)&0x8000)!=0;}
+  bool VoiceKeyboardDown()
+  {
+   int key=settings.VoiceChatKey,mods=settings.VoiceChatModifiers;
+   if(!Held(key))return false;
+   bool ctrl=Held((int)Keys.ControlKey),alt=Held((int)Keys.Menu),shift=Held((int)Keys.ShiftKey);
+   return ctrl==((mods&2)!=0)&&alt==((mods&1)!=0)&&shift==((mods&4)!=0);
+  }
+  void ShowVoice(string title,string detail,Color color,double seconds)
+  {voiceOverlay.Display(title,detail,color);voiceStatusUntil=seconds>0?Now+seconds:0;UpdateVoiceState(title+" • "+detail);}
   void BuildVoiceChatSettings(SettingsPage page)
   {
-   var card=new SettingsCard{Height=540,Margin=new Padding(0,0,0,16)};page.Controls.Add(card);
+   var card=new SettingsCard{Height=590,Margin=new Padding(0,0,0,16)};page.Controls.Add(card);
    var flow=new FlowLayoutPanel{Dock=DockStyle.Fill,FlowDirection=FlowDirection.TopDown,WrapContents=false,BackColor=Theme.Surface};card.Controls.Add(flow);
    var title=Label("Falar no chat do LMU",30);title.Font=new Font(Theme.BodyFont,13,FontStyle.Bold);flow.Controls.Add(title);
-   var hint=Label("Segure o botão do volante, fale e solte: o texto reconhecido será enviado automaticamente. Usa um modelo Whisper local. Configure Realtime Chat do LMU para Enter.",68);flow.Controls.Add(hint);
+   var hint=Label("Segure o botão do volante ou a tecla vinculada, fale e solte. O indicador aparece na pista. Configure Realtime Chat do LMU para Enter.",68);flow.Controls.Add(hint);
    flow.Controls.Add(Check("Ativar envio automático",settings.VoiceChatEnabled,v=>{settings.VoiceChatEnabled=v;if(!v)voiceDictation.Cancel();Changed();}));
    var micLabel=Label("Microfone",25);flow.Controls.Add(micLabel);
    voiceMicrophone=new ComboBox{DropDownStyle=ComboBoxStyle.DropDownList,Width=470};flow.Controls.Add(voiceMicrophone);
@@ -27,23 +39,33 @@ namespace Arthur.LmuOverlay
    voiceLanguage=new ComboBox{DropDownStyle=ComboBoxStyle.DropDownList,Width=220};voiceLanguage.Items.AddRange(new object[]{"Inglês (en)","Português (pt)"});voiceLanguage.SelectedIndex=settings.VoiceLanguage=="pt"?1:0;voiceLanguage.SelectedIndexChanged+=delegate{settings.VoiceLanguage=voiceLanguage.SelectedIndex==1?"pt":"en";QueueSave();};flow.Controls.Add(voiceLanguage);
    var actions=new FlowLayoutPanel{Height=38};flow.Controls.Add(actions);
    actions.Controls.Add(Button("Vincular botão",()=>{voiceCapturing=true;voiceReleased=false;voiceCaptureUntil=Now+20;wheel.Refresh();voiceState.Text="Solte todos os botões e pressione o escolhido (20 s).";}));
-   actions.Controls.Add(Button("Limpar",()=>{voiceCapturing=false;settings.VoiceChatButton=null;QueueSave();UpdateVoiceState("Vínculo removido.");}));
-   voiceState=Label("",48);flow.Controls.Add(voiceState);UpdateVoiceState("Selecione o microfone, o executável e um modelo local.");
+   actions.Controls.Add(Button("Vincular tecla",BindVoiceKey));
+   actions.Controls.Add(Button("Limpar",()=>{voiceCapturing=false;settings.VoiceChatButton=null;settings.VoiceChatKey=0;settings.VoiceChatModifiers=0;QueueSave();UpdateVoiceState("Vínculos removidos.");}));
+   voiceState=Label("",64);flow.Controls.Add(voiceState);UpdateVoiceState("Pronto para gravar na pista.");
    flow.SizeChanged+=delegate{title.Width=hint.Width=actions.Width=voiceState.Width=whisperExecutable.Width=whisperModel.Width=Math.Max(180,flow.ClientSize.Width-8);};
    voiceDictation.Completed+=text=>{if(IsDisposed||!IsHandleCreated)return;BeginInvoke((Action)(()=>{
-    if(!voiceRecordingWasValid||!settings.VoiceChatEnabled||!IsGameForeground(Win32.GetForegroundWindow(),Now)){UpdateVoiceState("Foco mudou; mensagem descartada.");return;}
-    if(string.IsNullOrWhiteSpace(text)){UpdateVoiceState("Não entendi a fala. Nada foi enviado.");return;}
-    try{if(VoiceChatKeys.Send(text,()=>IsGameForeground(Win32.GetForegroundWindow(),Now)))UpdateVoiceState("Comando de envio: "+text);else UpdateVoiceState("Envio cancelado: jogo fora de foco ou frase longa.");}catch(Exception ex){UpdateVoiceState("Falha no envio: "+ex.Message);AppLog.Write("Chat por voz",ex);}
+    if(!voiceRecordingWasValid||!settings.VoiceChatEnabled||!IsGameForeground(Win32.GetForegroundWindow(),Now)){ShowVoice("Não enviado","O jogo perdeu o foco durante a transcrição.",Color.OrangeRed,5);return;}
+    if(string.IsNullOrWhiteSpace(text)){ShowVoice("Não enviado","Não foi possível entender a fala.",Color.OrangeRed,5);return;}
+    try{if(VoiceChatKeys.Send(text,()=>IsGameForeground(Win32.GetForegroundWindow(),Now)))ShowVoice("Concluído","Comando enviado ao jogo: "+text,Color.FromArgb(73,220,155),5);else ShowVoice("Não enviado","Jogo fora de foco ou frase longa.",Color.OrangeRed,5);}catch(Exception ex){ShowVoice("Falha no envio",ex.Message,Color.OrangeRed,5);AppLog.Write("Chat por voz",ex);}
    }));};
-   voiceDictation.Error+=message=>{if(!IsDisposed&&IsHandleCreated)BeginInvoke((Action)(()=>UpdateVoiceState("Falha no microfone: "+message)));};
+   voiceDictation.Error+=message=>{if(!IsDisposed&&IsHandleCreated)BeginInvoke((Action)(()=>ShowVoice("Falha na voz",message,Color.OrangeRed,5)));};
+  }
+  void BindVoiceKey()
+  {
+   capturing=true;
+   try{using(var dialog=new KeyCapture())if(dialog.ShowDialog(this)==DialogResult.OK){
+    if(dialog.SelectedKey==settings.HotkeyKey&&dialog.SelectedModifiers==settings.HotkeyModifiers){UpdateVoiceState("Essa tecla já oculta os painéis. Escolha outra.");return;}
+    settings.VoiceChatKey=dialog.SelectedKey;settings.VoiceChatModifiers=dialog.SelectedModifiers;QueueSave();UpdateVoiceState("Tecla vinculada. Segure para falar na pista.");
+   }}finally{capturing=false;}
   }
   void ChooseVoiceFile(TextBox target,string filter,bool executable)
   {
    using(var dialog=new OpenFileDialog{Filter=filter,CheckFileExists=true})if(dialog.ShowDialog(this)==DialogResult.OK){target.Text=dialog.FileName;if(executable)settings.VoiceWhisperExecutable=dialog.FileName;else settings.VoiceWhisperModel=dialog.FileName;QueueSave();UpdateVoiceState("Arquivo selecionado.");}
   }
-  void UpdateVoiceState(string message){if(voiceState!=null)voiceState.Text=(settings.VoiceChatButton==null?"Botão não vinculado":settings.VoiceChatButton.ToString())+" • "+message;}
+  void UpdateVoiceState(string message){if(voiceState!=null)voiceState.Text=(settings.VoiceChatButton==null?"Sem botão":settings.VoiceChatButton.ToString())+" / "+(settings.VoiceChatKey==0?"sem tecla":KeyCapture.Display(settings.VoiceChatKey,settings.VoiceChatModifiers))+" • "+message;}
   void PollVoiceChat(double now)
   {
+   if(voiceStatusUntil>0&&now>=voiceStatusUntil){voiceStatusUntil=0;voiceOverlay.Clear();}
    var buttons=wheel.ReadButtons(now);
    if(voiceCapturing){
     if(now>voiceCaptureUntil){voiceCapturing=false;UpdateVoiceState("Tempo esgotado.");}
@@ -52,16 +74,18 @@ namespace Arthur.LmuOverlay
    }
    if(whisperExecutable!=null&&whisperExecutable.Text!=settings.VoiceWhisperExecutable){settings.VoiceWhisperExecutable=whisperExecutable.Text;QueueSave();}
    if(whisperModel!=null&&whisperModel.Text!=settings.VoiceWhisperModel){settings.VoiceWhisperModel=whisperModel.Text;QueueSave();}
-   bool active=!voiceCapturing&&settings.VoiceChatEnabled&&settings.VoiceChatButton!=null&&voiceDictation.Available&&
+   bool active=!voiceCapturing&&settings.VoiceChatEnabled&&(settings.VoiceChatButton!=null||settings.VoiceChatKey!=0)&&voiceDictation.Available&&
       !WindowInteractionPaused&&OverlayVisibility.OnTrack(Current,now)&&IsGameForeground(Win32.GetForegroundWindow(),now);
    bool found=buttons.Any(b=>settings.VoiceChatButton!=null&&settings.VoiceChatButton.Matches(b));
-   bool down=found&&buttons.Any(b=>settings.VoiceChatButton.Matches(b)&&b.Pressed);
+   bool wheelDown=found&&buttons.Any(b=>settings.VoiceChatButton.Matches(b)&&b.Pressed);
+   bool keyDown=VoiceKeyboardDown(),down=wheelDown||keyDown;
    if(voiceDictation.Recording){
-    if(!active||!found||now-voiceStarted>12){voiceRecordingWasValid=false;voiceDictation.Cancel();UpdateVoiceState("Fala cancelada (foco, dispositivo ou limite de 12 s).");}
-    else if(!down){voiceRecordingWasValid=true;voiceDictation.Stop();UpdateVoiceState("Transcrevendo…");}
+    if(!active||(!voiceStartedWithKeyboard&&!found)||now-voiceStarted>12){voiceRecordingWasValid=false;voiceDictation.Cancel();ShowVoice("Gravação cancelada","Foco, dispositivo ou limite de 12 segundos.",Color.OrangeRed,5);}
+    else if(!(voiceStartedWithKeyboard?keyDown:wheelDown)){voiceRecordingWasValid=true;voiceDictation.Stop();ShowVoice("Transcrevendo","Aguarde o reconhecimento da fala.",Color.DeepSkyBlue,0);}
    }else if(active&&down&&!voicePreviouslyDown){
     voiceDictation.ExecutablePath=settings.VoiceWhisperExecutable;voiceDictation.ModelPath=settings.VoiceWhisperModel;voiceDictation.Microphone=settings.VoiceMicrophone;voiceDictation.Language=settings.VoiceLanguage;
-    voiceRecordingWasValid=false;if(voiceDictation.Start()){voiceStarted=now;UpdateVoiceState("Ouvindo… solte para enviar.");}
+    voiceRecordingWasValid=false;voiceStartedWithKeyboard=keyDown;
+    if(voiceDictation.Start()){voiceStarted=now;ShowVoice("Ouvindo","Fale agora; solte para enviar.",Color.FromArgb(94,201,255),0);}
    }
    voicePreviouslyDown=active&&down;
   }

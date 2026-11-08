@@ -50,7 +50,7 @@ namespace Arthur.LmuOverlay
     var info=new ProcessStartInfo{FileName=ExecutablePath,Arguments="-m "+Quote(ModelPath)+" -f "+Quote(path)+" -l "+(Language=="pt"?"pt":"en")+" -otxt -of "+Quote(prefix)+" -np",WorkingDirectory=Path.GetDirectoryName(ExecutablePath),UseShellExecute=false,CreateNoWindow=true};
     using(var p=Process.Start(info)){
      if(p==null)throw new IOException("Não foi possível iniciar o Whisper.");
-     if(!p.WaitForExit(30000)){p.Kill();p.WaitForExit();throw new TimeoutException("Transcrição demorou mais de 30 segundos.");}
+     if(!p.WaitForExit(90000)){p.Kill();p.WaitForExit();throw new TimeoutException("Transcrição demorou mais de 90 segundos.");}
      if(p.ExitCode!=0)throw new IOException("Whisper encerrou com código "+p.ExitCode+".");
     }
     string text=File.ReadAllText(output,Encoding.UTF8).Trim();var handler=Completed;if(handler!=null&&!disposed)handler(text);

@@ -1,12 +1,10 @@
-# Chat por voz 0.12.6 — versão experimental
+# Chat por voz 0.12.7
 
-O Arts agora permite escolher um microfone, um idioma e um modelo Whisper local. Esta branch não foi compilada ou testada no Windows/LMU neste ambiente; não substitua a versão estável antes do teste.
+O instalador completo contém o aplicativo, o `whisper-cli.exe`, suas DLLs e o modelo inglês. Não é necessário selecionar os arquivos ou baixar o modelo após instalar.
 
-1. Instale o SDK .NET para compilar net48 e execute `COMPILAR.cmd` (o projeto restaura NAudio 2.2.1 pelo NuGet).
-2. Baixe uma compilação Windows x64 de `whisper-cli.exe` do projeto oficial `ggml-org/whisper.cpp` (inclua as DLLs distribuídas com ele na mesma pasta). Obtenha separadamente o modelo `ggml-small.en.bin` (inglês, ~466 MiB) ou `ggml-base.en.bin` (~142 MiB) de `ggerganov/whisper.cpp` no Hugging Face. Para português use um modelo multilíngue `ggml-small.bin` ou `ggml-base.bin`, não `.en`. O app não baixa o modelo automaticamente.
-3. No Arts, em Atalhos > Falar no chat, escolha seu microfone, indique o caminho de `whisper-cli.exe` e do modelo `.bin`, escolha Inglês/Português, vincule um botão livre e ative o envio.
-4. No LMU, vincule Realtime Chat à tecla Enter e deixe o campo fechado. Com LMU em primeiro plano, segure o botão, fale, solte. O app cria áudio temporário local de até 12 s, executa Whisper em segundo plano e apaga WAV e TXT depois; se o foco mudar, não envia.
+1. No Arts, abra **Falar no chat do LMU**, selecione o microfone, escolha **Vincular botão** para um botão físico do volante ou **Vincular tecla** para uma tecla/combinação de teclado, e marque **Ativar envio automático**.
+2. No LMU, configure **Realtime Chat = Enter**. Entre na pista com o jogo em primeiro plano.
+3. Segure o botão/atalho enquanto fala (até 12 segundos), depois solte. O indicador mostra **Ouvindo**, **Transcrevendo** e **Concluído** ou o motivo da falha. O último estado permanece cinco segundos.
+4. Para diagnóstico, observe a última mensagem na seção de voz do painel. **Concluído** significa que o comando de digitação foi enviado ao Windows; o jogo ainda precisa aceitar essa entrada no chat.
 
-A inferência pode demorar alguns segundos. O chat do LMU ainda precisa ser validado em Windows com microfone/volante real; `SendInput` Unicode pode não ser aceito pelo jogo. Este recurso não usa nem altera o Sector ou o EAC. Verifique as regras de chat do evento online.
-
-Referências oficiais: https://github.com/ggml-org/whisper.cpp e https://huggingface.co/ggerganov/whisper.cpp
+Teste manual necessário no LMU online: confirme que Enter abre o chat, que a mensagem aparece na caixa e que Enter a publica. O teste automatizado do build valida o executável Whisper e a transcrição com o modelo incluído, mas não consegue simular o jogo, o volante, o microfone nem o EAC.
