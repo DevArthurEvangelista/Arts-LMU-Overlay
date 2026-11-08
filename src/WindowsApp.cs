@@ -39,6 +39,8 @@ namespace Arthur.LmuOverlay
         [DataMember] public int DeltaThickness=16;
         [DataMember] public TrainingWheelBinding TrainingSaveButton,TrainingRestoreButton,VoiceChatButton;
         [DataMember] public bool VoiceChatEnabled;
+        [DataMember] public string VoiceWhisperExecutable="",VoiceWhisperModel="",VoiceLanguage="en";
+        [DataMember] public int VoiceMicrophone=-1;
         [DataMember] public string LmuExecutablePath="";
         [DataMember(EmitDefaultValue=false)] public int Opacity;
         [DataMember] public bool ShowPedals=true,ShowTable=true,PositionsSet,LinkOpacity,Flags=true,PulseShift=true,SmoothMotion=true;
@@ -79,6 +81,8 @@ namespace Arthur.LmuOverlay
                     // Move only the old default. Keep a shortcut the user chose.
                     if(s.SchemaVersion<9 && s.HotkeyKey==(int)Keys.H && s.HotkeyModifiers==3)
                     { s.HotkeyKey=(int)Keys.F8;s.HotkeyModifiers=0; }
+                    if(s.VoiceLanguage!="pt")s.VoiceLanguage="en";
+                    if(s.VoiceMicrophone<-1)s.VoiceMicrophone=-1;
                     s.SchemaVersion=11;s.Appearance=PanelAppearance.NormalizeAll(s.Appearance);
                     s.DeltaThickness=(int)Format.Clamp(s.DeltaThickness,6,28);s.DeltaReference=DeltaMode.Normalize(s.DeltaReference);s.DeltaOpacity=(int)Format.Clamp(s.DeltaOpacity,0,100);s.DeltaRange=(int)Format.Clamp(s.DeltaRange,1,10);
                     s.OnlyMyClass=true;s.Seconds=PedalDesign.HistorySeconds;
