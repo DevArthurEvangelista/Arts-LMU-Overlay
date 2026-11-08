@@ -17,7 +17,7 @@ jobs:
       - name: Check overlay visibility and core behavior
         shell: pwsh
         run: |
-          dotnet run --project tests/Checks.csproj -c Release
+          dotnet run --project tests/Checks.csproj -c Release -- tests/lmu-fixture.bin
           if ($LASTEXITCODE -ne 0) { throw 'Checks failed' }
       - name: Compile Arts
         shell: pwsh
