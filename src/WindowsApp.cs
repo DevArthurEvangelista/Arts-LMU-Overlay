@@ -37,7 +37,8 @@ namespace Arthur.LmuOverlay
         [DataMember] public int PedalOpacity=92,TableOpacity=92;
         [DataMember] public int DeltaReference,DeltaOpacity,DeltaRange=2;
         [DataMember] public int DeltaThickness=16;
-        [DataMember] public TrainingWheelBinding TrainingSaveButton,TrainingRestoreButton;
+        [DataMember] public TrainingWheelBinding TrainingSaveButton,TrainingRestoreButton,VoiceChatButton;
+        [DataMember] public bool VoiceChatEnabled;
         [DataMember] public string LmuExecutablePath="";
         [DataMember(EmitDefaultValue=false)] public int Opacity;
         [DataMember] public bool ShowPedals=true,ShowTable=true,PositionsSet,LinkOpacity,Flags=true,PulseShift=true,SmoothMotion=true;
@@ -445,6 +446,7 @@ namespace Arthur.LmuOverlay
             }
             wheelAxes=wheel.Read(now);
             PollTrainingButtons(now);
+            PollVoiceChat(now);
             PhysicalWheelState.Apply(Current,settings.UsePhysicalWheel,settings.WheelCalibration,wheelAxes,settings.WheelMaximumRotation,settings.CarMaximumRotation);
             Display=motion.Step(Current,now,settings.SmoothMotion);Display.Delta=deltaMotion.Step(Current.Delta,settings.DeltaReference,now,settings.SmoothMotion);
             // Hide on state changes even while another app or a tray popup has focus.
@@ -530,7 +532,7 @@ namespace Arthur.LmuOverlay
                 for(int i=1;i<=4;i++) Win32.UnregisterHotKey(Handle,i);
                 foreach(var panel in panels) panel.Close();pump.LearningSample=null;pump.Dispose();deltaRepository.Dispose();learning.Dispose();
                 if(learningWindow!=null && !learningWindow.IsDisposed) learningWindow.Close();
-                countries.Dispose();steeringSetup.Dispose();vehicleDamage.Dispose();penalties.Dispose();wheel.Dispose();tray.Visible=false;tray.Dispose();trayMenu.Dispose();timer.Dispose();saveTimer.Dispose();
+                voiceDictation.Dispose();countries.Dispose();steeringSetup.Dispose();vehicleDamage.Dispose();penalties.Dispose();wheel.Dispose();tray.Visible=false;tray.Dispose();trayMenu.Dispose();timer.Dispose();saveTimer.Dispose();
             }
             base.OnFormClosed(e);
         }
