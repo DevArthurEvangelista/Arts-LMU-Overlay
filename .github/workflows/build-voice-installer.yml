@@ -47,7 +47,7 @@ jobs:
           if (!(Test-Path (Join-Path $root 'LMUOverlay.exe'))) { throw 'App exe missing from staging' }
           if (!(Test-Path (Join-Path $root 'Whisper/ggml-small.en.bin'))) { throw 'English model missing from staging' }
           $absoluteRoot = $root + '\'
-          $script = (Get-Content installer/Setup.nsi -Raw).Replace('../', $absoluteRoot)
+          $script = (Get-Content installer/Setup.nsi -Raw).Replace('../', $absoluteRoot).Replace('Whisper/', 'Whisper\').Replace('assets/', 'assets\').Replace('third_party/', 'third_party\')
           Set-Content installer/Setup-ci.nsi $script -Encoding UTF8
           & 'C:\Program Files (x86)\NSIS\makensis.exe' /V2 /WX installer/Setup-ci.nsi
           if ($LASTEXITCODE -ne 0) { throw 'NSIS failed' }
