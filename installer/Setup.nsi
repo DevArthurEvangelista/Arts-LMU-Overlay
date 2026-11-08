@@ -72,7 +72,7 @@ Section "Arts LMU OVERLAY" SEC_MAIN
   SetOutPath "$INSTDIR"
   SetOverwrite on
   File "../LMUOverlay.exe"
-  File /nonfatal "../NAudio*.dll"
+  File "../NAudio*.dll"
   File "../LMUOverlay.exe.config"
   File "../assets/SectorRuntime-1.0.0.zip"
   File "../LEIA-ME.txt"
