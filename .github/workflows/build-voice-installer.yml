@@ -2,6 +2,8 @@ name: Build complete voice installer
 on:
   push:
     branches: [feat/voice-chat-online]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 jobs:
   build:
