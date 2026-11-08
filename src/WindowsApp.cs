@@ -213,6 +213,8 @@ namespace Arthur.LmuOverlay
         public Controller()
         {
             settings=AppSettings.Load(out startupWarning);
+            if(string.IsNullOrWhiteSpace(settings.VoiceWhisperExecutable))settings.VoiceWhisperExecutable=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Whisper","whisper-cli.exe");
+            if(string.IsNullOrWhiteSpace(settings.VoiceWhisperModel))settings.VoiceWhisperModel=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Whisper","ggml-small.en.bin");
             settings.Appearance=PanelAppearance.NormalizeAll(settings.Appearance);
             AppLog.Write("Configurações carregadas",null);
             deltaRepository=new DeltaRepository(new DeltaFiles(Path.Combine(AppSettings.DirectoryPath,"ReferenciasDelta")),AppLog.Write);delta=new DeltaTracker(deltaRepository);
