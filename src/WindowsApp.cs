@@ -213,6 +213,16 @@ namespace Arthur.LmuOverlay
         double processChecked=-1;
         uint checkedProcess;
         bool checkedIsGame;
+        double gameAliveChecked=-10;
+        bool gameAlive;
+        bool GameRunning()
+        {
+            if(Now-gameAliveChecked<.5)return gameAlive;
+            gameAliveChecked=Now;gameAlive=false;
+            foreach(var process in Process.GetProcessesByName("Le Mans Ultimate"))
+                using(process) { try { if(!process.HasExited)gameAlive=true; } catch(InvalidOperationException){} }
+            return gameAlive;
+        }
         string startupWarning="";
         readonly Label steeringStatus=new Label();
         public Controller()
@@ -334,6 +344,13 @@ namespace Arthur.LmuOverlay
         }
         void ApplyVisibility()
         {
+            if(!GameRunning())
+            {
+                foreach(var panel in panels)panel.SetRequestedVisibility(false);
+                voiceOverlay.Clear();voiceRecordingWasValid=false;
+                if(voiceDictation.Recording&&!voiceStopRequested){voiceStopRequested=true;voiceStopAt=Now;voiceDictation.Cancel();}
+                trayVisibility.Enabled=false;return;
+            }
             double now=Now;bool editing=positioning.Checked;
             IntPtr foreground=Win32.GetForegroundWindow();
             bool gameFocused=IsGameForeground(foreground,now);
@@ -505,6 +522,7 @@ namespace Arthur.LmuOverlay
         }
         bool IsGameForeground(IntPtr foreground,double now)
         {
+            if(!GameRunning())return false;
             if(foreground==IntPtr.Zero) return false;
             if(Current.GameWindow!=0 && unchecked((ulong)foreground.ToInt64())==Current.GameWindow) return true;
             uint id;Win32.GetWindowThreadProcessId(foreground,out id);

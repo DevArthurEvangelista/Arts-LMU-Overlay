@@ -53,6 +53,18 @@ namespace Arthur.LmuOverlay
         }
         public void Clear() { if(Visible) Hide(); }
         protected override void Dispose(bool disposing) { if(disposing) watchdog.Dispose();base.Dispose(disposing); }
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+            if(Width<20||Height<20)return;
+            using(var path=new GraphicsPath())
+            {
+                const int r=18;
+                path.AddArc(0,0,r,r,180,90);path.AddArc(Width-r-1,0,r,r,270,90);
+                path.AddArc(Width-r-1,Height-r-1,r,r,0,90);path.AddArc(0,Height-r-1,r,r,90,90);path.CloseFigure();
+                var old=Region;Region=new Region(path);if(old!=null)old.Dispose();
+            }
+        }
         protected override void OnPaint(PaintEventArgs e)
         {
             var g=e.Graphics;g.SmoothingMode=SmoothingMode.AntiAlias;
@@ -61,7 +73,6 @@ namespace Arthur.LmuOverlay
                 int r=18;
                 path.AddArc(0,0,r,r,180,90);path.AddArc(Width-r-1,0,r,r,270,90);
                 path.AddArc(Width-r-1,Height-r-1,r,r,0,90);path.AddArc(0,Height-r-1,r,r,90,90);path.CloseFigure();
-                var old=Region;Region=new Region(path);if(old!=null)old.Dispose();
                 using(var background=new SolidBrush(Color.FromArgb(18,25,35))) g.FillPath(background,path);
                 using(var border=new Pen(Color.FromArgb(80,accent),1)) g.DrawPath(border,path);
             }

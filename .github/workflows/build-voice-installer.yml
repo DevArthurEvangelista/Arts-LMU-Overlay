@@ -26,6 +26,25 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Compilation failed' }
           Copy-Item bin/Release/net48/LMUOverlay.exe ./LMUOverlay.exe
           Copy-Item bin/Release/net48/NAudio*.dll ./
+      - name: Exercise voice HUD message loop and native input layout
+        shell: pwsh
+        run: |
+          dotnet build tests/VoiceHudChecks.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'HUD test compilation failed' }
+          $test = (Resolve-Path tests/bin/Release/net48/VoiceHudChecks.exe).Path
+          $app = (Resolve-Path bin/Release/net48/LMUOverlay.exe).Path
+          $p = Start-Process $test -ArgumentList ('"' + $app + '"') -PassThru -RedirectStandardOutput hud-test.txt -RedirectStandardError hud-error.txt
+          if (!$p.WaitForExit(15000)) { $p.Kill(); throw 'HUD starved the Windows message loop' }
+          Get-Content hud-test.txt
+          Get-Content hud-error.txt
+          if ($p.ExitCode -ne 0) { throw 'HUD regression test failed' }
+          git fetch --depth 1 origin 98a0d6da73eadd12db8c2f7d13fb04ae5ca5169c
+          git worktree add ../voice-baseline FETCH_HEAD
+          dotnet build ../voice-baseline/LMUOverlay.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Baseline compilation failed' }
+          $baseline = (Resolve-Path ../voice-baseline/bin/Release/net48/LMUOverlay.exe).Path
+          $old = Start-Process $test -ArgumentList ('"' + $baseline + '" baseline') -PassThru -RedirectStandardOutput baseline-test.txt -RedirectStandardError baseline-error.txt
+          if (!$old.WaitForExit(15000)) { $old.Kill(); Write-Output 'REPRODUCED: 0.12.8 HUD starves timer processing' } else { Get-Content baseline-test.txt; Get-Content baseline-error.txt; Write-Output ('Baseline exit code: ' + $old.ExitCode) }
       - name: Build Whisper for Windows
         shell: pwsh
         run: |
@@ -63,10 +82,10 @@ jobs:
           Set-Content installer/Setup-ci.nsi $script -Encoding UTF8
           & 'C:\Program Files (x86)\NSIS\makensis.exe' /V2 /WX installer/Setup-ci.nsi
           if ($LASTEXITCODE -ne 0) { throw 'NSIS failed' }
-          if (!(Test-Path Instalar-Arts-LMU-Overlay-0.12.8.exe)) { throw 'Installer missing' }
+          if (!(Test-Path Instalar-Arts-LMU-Overlay-0.12.9.exe)) { throw 'Installer missing' }
       - uses: actions/upload-artifact@v4
         with:
-          name: Arts-LMU-Overlay-0.12.8-Instalador-Completo
-          path: Instalar-Arts-LMU-Overlay-0.12.8.exe
+          name: Arts-LMU-Overlay-0.12.9-Instalador-Completo
+          path: Instalar-Arts-LMU-Overlay-0.12.9.exe
           if-no-files-found: error
           compression-level: 0

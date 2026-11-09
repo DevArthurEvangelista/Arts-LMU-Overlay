@@ -1,4 +1,4 @@
-# Chat por voz 0.12.8
+# Chat por voz 0.12.9
 
 O instalador completo contém o aplicativo, o `whisper-cli.exe`, suas DLLs e o modelo inglês. Não é necessário selecionar os arquivos ou baixar o modelo após instalar.
 

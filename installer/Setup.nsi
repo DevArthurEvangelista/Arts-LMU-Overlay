@@ -5,16 +5,16 @@ Unicode true
 !include "FileFunc.nsh"
 
 Name "Arts LMU OVERLAY"
-OutFile "../Instalar-Arts-LMU-Overlay-0.12.8.exe"
+OutFile "../Instalar-Arts-LMU-Overlay-0.12.9.exe"
 InstallDir "$LOCALAPPDATA\Programs\ArthurLMUOverlay"
 InstallDirRegKey HKCU "Software\ArthurLMUOverlay" "InstallDirectory"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma
 BrandingText "Arts LMU OVERLAY"
-VIProductVersion "0.12.8.0"
+VIProductVersion "0.12.9.0"
 VIAddVersionKey /LANG=1046 "ProductName" "Arts LMU OVERLAY"
 VIAddVersionKey /LANG=1046 "FileDescription" "Instalação local do Arts LMU OVERLAY para Windows"
-VIAddVersionKey /LANG=1046 "FileVersion" "0.12.8"
+VIAddVersionKey /LANG=1046 "FileVersion" "0.12.9"
 VIAddVersionKey /LANG=1046 "LegalCopyright" "Arts LMU OVERLAY • Arthur"
 
 !define MUI_ICON "../assets/App.ico"
@@ -96,7 +96,7 @@ Section "Arts LMU OVERLAY" SEC_MAIN
   CreateShortcut "$SMPROGRAMS\Arts LMU OVERLAY.lnk" "$INSTDIR\LMUOverlay.exe" "" "$INSTDIR\LMUOverlay.exe" 0
   WriteRegStr HKCU "Software\ArthurLMUOverlay" "InstallDirectory" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayName" "Arts LMU OVERLAY"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayVersion" "0.12.8"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayVersion" "0.12.9"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "Publisher" "Arthur"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayIcon" "$INSTDIR\LMUOverlay.exe,0"

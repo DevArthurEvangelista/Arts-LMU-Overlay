@@ -62,7 +62,8 @@ namespace Arthur.LmuOverlay
  internal static class VoiceChatKeys
  {
   [StructLayout(LayoutKind.Sequential)] struct INPUT {public int type;public INPUTUNION u;}
-  [StructLayout(LayoutKind.Explicit)] struct INPUTUNION {[FieldOffset(0)]public KEYBDINPUT ki;[FieldOffset(0)]public long padding;}
+  [StructLayout(LayoutKind.Sequential)] struct MOUSEINPUT {public int dx,dy;public uint data,flags,time;public IntPtr extra;}
+  [StructLayout(LayoutKind.Explicit)] struct INPUTUNION {[FieldOffset(0)]public KEYBDINPUT ki;[FieldOffset(0)]public MOUSEINPUT mi;}
   [StructLayout(LayoutKind.Sequential)] struct KEYBDINPUT {public ushort vk,scan;public uint flags,time;public IntPtr extra;}
   [DllImport("user32.dll",SetLastError=true)] static extern uint SendInput(uint count,[In] INPUT[] inputs,int size);
   static void Key(ushort code,bool up,bool unicode){var v=new INPUT{type=1,u=new INPUTUNION{ki=new KEYBDINPUT{vk=unicode?(ushort)0:code,scan=unicode?code:(ushort)0,flags=(uint)((unicode?4:0)|(up?2:0))}}};if(SendInput(1,new[]{v},Marshal.SizeOf(typeof(INPUT)))!=1)throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());}
