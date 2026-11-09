@@ -9,7 +9,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <ApplicationIcon>assets/App.ico</ApplicationIcon>
     <ApplicationManifest>src/app.manifest</ApplicationManifest>
-    <Version>0.12.9</Version>
+    <Version>0.12.10</Version>
     <Description>Overlay local de pedais, motor e classificação para Le Mans Ultimate.</Description>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>true</Deterministic>

@@ -1,4 +1,4 @@
-# Chat por voz 0.12.9
+# Chat por voz 0.12.10
 
 O instalador completo contém o aplicativo, o `whisper-cli.exe`, suas DLLs e o modelo inglês. Não é necessário selecionar os arquivos ou baixar o modelo após instalar.
 
@@ -8,3 +8,5 @@ O instalador completo contém o aplicativo, o `whisper-cli.exe`, suas DLLs e o m
 4. Para diagnóstico, observe a última mensagem na seção de voz do painel. **Concluído** significa que o comando de digitação foi enviado ao Windows; o jogo ainda precisa aceitar essa entrada no chat.
 
 Teste manual necessário no LMU online: confirme que Enter abre o chat, que a mensagem aparece na caixa e que Enter a publica. O teste automatizado do build valida o executável Whisper e a transcrição com o modelo incluído, mas não consegue simular o jogo, o volante, o microfone nem o EAC.
+
+Envio 0.12.10: a transcrição é copiada para a área de transferência, o app abre o chat com Enter, espera 350 ms, cola com Ctrl+V, espera 250 ms e envia com Enter. A última frase fica na área de transferência. O chat deve estar fechado antes da gravação. Se o LMU perder o foco durante a sequência, as etapas restantes são canceladas.

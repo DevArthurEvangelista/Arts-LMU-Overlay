@@ -8,7 +8,7 @@ namespace Arthur.LmuOverlay
  public sealed partial class Controller
  {
   readonly VoiceDictation voiceDictation=new VoiceDictation();
-  Label voiceState;ComboBox voiceMicrophone;TextBox whisperExecutable,whisperModel;ComboBox voiceLanguage;bool voiceReleased,voiceCapturing,voicePreviouslyDown,voiceRecordingWasValid,voiceStartedWithKeyboard,voiceStopRequested,voiceStopStalled;double voiceCaptureUntil,voiceStarted,voiceStopAt;
+  Label voiceState;ComboBox voiceMicrophone;TextBox whisperExecutable,whisperModel;ComboBox voiceLanguage;bool voiceReleased,voiceCapturing,voicePreviouslyDown,voiceRecordingWasValid,voiceStartedWithKeyboard,voiceStopRequested,voiceStopStalled,voiceSending;double voiceCaptureUntil,voiceStarted,voiceStopAt;
   [DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
   static bool Held(int key){return key>0&&(GetAsyncKeyState(key)&0x8000)!=0;}
   bool VoiceKeyboardDown()
@@ -49,10 +49,11 @@ namespace Arthur.LmuOverlay
    actions.Controls.Add(Button("Limpar",()=>{voiceCapturing=false;settings.VoiceChatButton=null;settings.VoiceChatKey=0;settings.VoiceChatModifiers=0;QueueSave();UpdateVoiceState("Vínculos removidos.");}));
    voiceState=Label("",64);flow.Controls.Add(voiceState);UpdateVoiceState("Pronto para gravar na pista.");
    flow.SizeChanged+=delegate{title.Width=hint.Width=actions.Width=voiceState.Width=whisperExecutable.Width=whisperModel.Width=Math.Max(180,flow.ClientSize.Width-8);};
-   voiceDictation.Completed+=text=>{if(IsDisposed||!IsHandleCreated)return;BeginInvoke((Action)(()=>{
+   voiceDictation.Completed+=text=>{if(IsDisposed||!IsHandleCreated)return;BeginInvoke((Action)(async ()=>{
     if(!voiceRecordingWasValid||!settings.VoiceChatEnabled||!IsGameForeground(Win32.GetForegroundWindow(),Now)){ShowVoice("Não enviado","O jogo perdeu o foco durante a transcrição.",Color.OrangeRed,5);return;}
     if(string.IsNullOrWhiteSpace(text)){ShowVoice("Não enviado","Não foi possível entender a fala.",Color.OrangeRed,5);return;}
-    try{if(VoiceChatKeys.Send(text,()=>IsGameForeground(Win32.GetForegroundWindow(),Now)))ShowVoice("Concluído","Comando enviado ao jogo: "+text,Color.FromArgb(73,220,155),5);else ShowVoice("Não enviado","Jogo fora de foco ou frase longa.",Color.OrangeRed,5);}catch(Exception ex){ShowVoice("Falha no envio",ex.Message,Color.OrangeRed,5);AppLog.Write("Chat por voz",ex);}
+    voiceSending=true;ShowVoice("Enviando","Abrindo o chat e colando a mensagem…",Color.DeepSkyBlue,5);
+    try{bool sent=await VoiceChatKeys.SendAsync(text,()=>!IsDisposed&&settings.VoiceChatEnabled&&IsGameForeground(Win32.GetForegroundWindow(),Now));if(IsDisposed)return;if(sent)ShowVoice("Concluído","Comando enviado ao jogo: "+text,Color.FromArgb(73,220,155),5);else ShowVoice("Não enviado","Jogo fora de foco ou frase longa.",Color.OrangeRed,5);}catch(Exception ex){if(IsDisposed)return;ShowVoice("Falha no envio",ex.Message,Color.OrangeRed,5);AppLog.Write("Chat por voz",ex);}finally{voiceSending=false;}
    }));};
    voiceDictation.Error+=message=>{if(!IsDisposed&&IsHandleCreated)BeginInvoke((Action)(()=>ShowVoice("Falha na voz",message,Color.OrangeRed,5)));};
   }
@@ -79,7 +80,7 @@ namespace Arthur.LmuOverlay
    }
    if(whisperExecutable!=null&&whisperExecutable.Text!=settings.VoiceWhisperExecutable){settings.VoiceWhisperExecutable=whisperExecutable.Text;QueueSave();}
    if(whisperModel!=null&&whisperModel.Text!=settings.VoiceWhisperModel){settings.VoiceWhisperModel=whisperModel.Text;QueueSave();}
-   bool active=!voiceCapturing&&settings.VoiceChatEnabled&&(settings.VoiceChatButton!=null||settings.VoiceChatKey!=0)&&voiceDictation.Available&&
+   bool active=!voiceSending&&!voiceCapturing&&settings.VoiceChatEnabled&&(settings.VoiceChatButton!=null||settings.VoiceChatKey!=0)&&voiceDictation.Available&&
       !WindowInteractionPaused&&OverlayVisibility.OnTrack(Current,now)&&IsGameForeground(Win32.GetForegroundWindow(),now);
    bool found=buttons.Any(b=>settings.VoiceChatButton!=null&&settings.VoiceChatButton.Matches(b));
    bool wheelDown=found&&buttons.Any(b=>settings.VoiceChatButton.Matches(b)&&b.Pressed);

@@ -4,6 +4,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using NAudio.Wave;
 namespace Arthur.LmuOverlay
 {
@@ -66,14 +68,36 @@ namespace Arthur.LmuOverlay
   [StructLayout(LayoutKind.Explicit)] struct INPUTUNION {[FieldOffset(0)]public KEYBDINPUT ki;[FieldOffset(0)]public MOUSEINPUT mi;}
   [StructLayout(LayoutKind.Sequential)] struct KEYBDINPUT {public ushort vk,scan;public uint flags,time;public IntPtr extra;}
   [DllImport("user32.dll",SetLastError=true)] static extern uint SendInput(uint count,[In] INPUT[] inputs,int size);
-  static void Key(ushort code,bool up,bool unicode){var v=new INPUT{type=1,u=new INPUTUNION{ki=new KEYBDINPUT{vk=unicode?(ushort)0:code,scan=unicode?code:(ushort)0,flags=(uint)((unicode?4:0)|(up?2:0))}}};if(SendInput(1,new[]{v},Marshal.SizeOf(typeof(INPUT)))!=1)throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());}
-  public static bool Send(string message,Func<bool> gameFocused)
+  [DllImport("user32.dll")] static extern uint MapVirtualKey(uint code,uint kind);
+  static void Key(ushort code,bool up)
   {
-   if(string.IsNullOrWhiteSpace(message)||message.Length>180||!gameFocused())return false;
-   Key(13,false,false);Key(13,true,false);Thread.Sleep(120);
+   var v=new INPUT{type=1,u=new INPUTUNION{ki=new KEYBDINPUT{scan=(ushort)MapVirtualKey(code,0),flags=(uint)(8|(up?2:0))}}};
+   if(SendInput(1,new[]{v},Marshal.SizeOf(typeof(INPUT)))!=1)throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+  }
+  public static Task<bool> SendAsync(string message,Func<bool> gameFocused)
+  {
+   return SendSequence(message,gameFocused,text=>{
+    var data=new DataObject();data.SetData(DataFormats.UnicodeText,text);
+    Clipboard.SetDataObject(data,true,5,40);
+   },Key,ms=>Task.Delay(ms));
+  }
+  // Run on the Windows UI context so clipboard access stays on the STA thread.
+  public static async Task<bool> SendSequence(string message,Func<bool> gameFocused,Action<string> copy,Action<ushort,bool> key,Func<int,Task> delay)
+  {
+   message=(message??"").Replace("\r"," ").Replace("\n"," ").Trim();
+   if(message.Length==0||message.Length>180||!gameFocused())return false;
+   copy(message);
    if(!gameFocused())return false;
-   foreach(char c in message){if(!gameFocused())return false;Key(c,false,true);Key(c,true,true);}
-   if(!gameFocused())return false;Key(13,false,false);Key(13,true,false);return true;
+   key(13,false);key(13,true);
+   await delay(350);
+   if(!gameFocused())return false;
+   key(17,false);
+   try { key(86,false);key(86,true); }
+   finally { key(17,true); }
+   await delay(250);
+   if(!gameFocused())return false;
+   key(13,false);key(13,true);
+   return true;
   }
  }
 }

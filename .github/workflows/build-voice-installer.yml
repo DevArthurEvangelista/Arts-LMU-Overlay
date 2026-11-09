@@ -82,10 +82,10 @@ jobs:
           Set-Content installer/Setup-ci.nsi $script -Encoding UTF8
           & 'C:\Program Files (x86)\NSIS\makensis.exe' /V2 /WX installer/Setup-ci.nsi
           if ($LASTEXITCODE -ne 0) { throw 'NSIS failed' }
-          if (!(Test-Path Instalar-Arts-LMU-Overlay-0.12.9.exe)) { throw 'Installer missing' }
+          if (!(Test-Path Instalar-Arts-LMU-Overlay-0.12.10.exe)) { throw 'Installer missing' }
       - uses: actions/upload-artifact@v4
         with:
-          name: Arts-LMU-Overlay-0.12.9-Instalador-Completo
-          path: Instalar-Arts-LMU-Overlay-0.12.9.exe
+          name: Arts-LMU-Overlay-0.12.10-Instalador-Completo
+          path: Instalar-Arts-LMU-Overlay-0.12.10.exe
           if-no-files-found: error
           compression-level: 0
