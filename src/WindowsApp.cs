@@ -37,7 +37,12 @@ namespace Arthur.LmuOverlay
         [DataMember] public int PedalOpacity=92,TableOpacity=92;
         [DataMember] public int DeltaReference,DeltaOpacity,DeltaRange=2;
         [DataMember] public int DeltaThickness=16;
-        [DataMember] public TrainingWheelBinding TrainingSaveButton,TrainingRestoreButton;
+        [DataMember] public TrainingWheelBinding TrainingSaveButton,TrainingRestoreButton,VoiceChatButton;
+        [DataMember] public bool VoiceChatEnabled;
+        [DataMember] public bool VoiceChatPaste;
+        [DataMember] public int VoiceChatKey,VoiceChatModifiers;
+        [DataMember] public string VoiceWhisperExecutable="",VoiceWhisperModel="",VoiceLanguage="en";
+        [DataMember] public int VoiceMicrophone=-1;
         [DataMember] public string LmuExecutablePath="";
         [DataMember(EmitDefaultValue=false)] public int Opacity;
         [DataMember] public bool ShowPedals=true,ShowTable=true,PositionsSet,LinkOpacity,Flags=true,PulseShift=true,SmoothMotion=true;
@@ -78,6 +83,10 @@ namespace Arthur.LmuOverlay
                     // Move only the old default. Keep a shortcut the user chose.
                     if(s.SchemaVersion<9 && s.HotkeyKey==(int)Keys.H && s.HotkeyModifiers==3)
                     { s.HotkeyKey=(int)Keys.F8;s.HotkeyModifiers=0; }
+                    if(s.VoiceLanguage!="pt")s.VoiceLanguage="en";
+                    if(s.VoiceMicrophone<-1)s.VoiceMicrophone=-1;
+                    if(s.VoiceChatKey<0 || s.VoiceChatKey>254 || s.VoiceChatKey==(int)Keys.F12) s.VoiceChatKey=0;
+                    s.VoiceChatModifiers&=7;
                     s.SchemaVersion=11;s.Appearance=PanelAppearance.NormalizeAll(s.Appearance);
                     s.DeltaThickness=(int)Format.Clamp(s.DeltaThickness,6,28);s.DeltaReference=DeltaMode.Normalize(s.DeltaReference);s.DeltaOpacity=(int)Format.Clamp(s.DeltaOpacity,0,100);s.DeltaRange=(int)Format.Clamp(s.DeltaRange,1,10);
                     s.OnlyMyClass=true;s.Seconds=PedalDesign.HistorySeconds;
@@ -184,6 +193,7 @@ namespace Arthur.LmuOverlay
         readonly OverlayWindow pedals,table;
         readonly OverlayWindow[] extras;
         readonly OverlayWindow[] panels;
+        readonly VoiceStatusOverlay voiceOverlay=new VoiceStatusOverlay();
         readonly System.Windows.Forms.Timer timer=new System.Windows.Forms.Timer { Interval=16 };
         readonly System.Windows.Forms.Timer saveTimer=new System.Windows.Forms.Timer { Interval=600 };
         readonly NotifyIcon tray=new NotifyIcon();
@@ -196,6 +206,7 @@ namespace Arthur.LmuOverlay
         CheckBox physicalWheelCheck;
         NumericUpDown pedalAlpha,tableAlpha;
         PanelAppearanceDialog appearanceDialog;
+        int appearancePanelIndex=-1;
         bool suppress,closing,capturing,exitRequested,notifiedClose;
         int visibilityHotkey,displayRefresh;
         double lastTable=-1,lastMaintenance=-1,lastDiagnostic=-30;
@@ -203,11 +214,25 @@ namespace Arthur.LmuOverlay
         double processChecked=-1;
         uint checkedProcess;
         bool checkedIsGame;
+        double gameAliveChecked=-10;
+        bool gameAlive;
+        bool GameRunning()
+        {
+            if(Now-gameAliveChecked<.5)return gameAlive;
+            gameAliveChecked=Now;gameAlive=false;
+            foreach(var process in Process.GetProcessesByName("Le Mans Ultimate"))
+                using(process) { try { if(!process.HasExited)gameAlive=true; } catch(InvalidOperationException){} }
+            return gameAlive;
+        }
         string startupWarning="";
         readonly Label steeringStatus=new Label();
         public Controller()
         {
             settings=AppSettings.Load(out startupWarning);
+            voiceOverlay.ShouldRemainVisible=()=>IsGameForeground(Win32.GetForegroundWindow(),Now)&&OverlayVisibility.OnTrack(Current,Now);
+            voiceOverlay.Expired+=VoiceOverlayExpired;
+            if(string.IsNullOrWhiteSpace(settings.VoiceWhisperExecutable))settings.VoiceWhisperExecutable=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Whisper","whisper-cli.exe");
+            if(string.IsNullOrWhiteSpace(settings.VoiceWhisperModel))settings.VoiceWhisperModel=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"Whisper","ggml-small.en.bin");
             settings.Appearance=PanelAppearance.NormalizeAll(settings.Appearance);
             AppLog.Write("Configurações carregadas",null);
             deltaRepository=new DeltaRepository(new DeltaFiles(Path.Combine(AppSettings.DirectoryPath,"ReferenciasDelta")),AppLog.Write);delta=new DeltaTracker(deltaRepository);
@@ -288,8 +313,9 @@ namespace Arthur.LmuOverlay
                 size=>panel.SetDimensions(size),Changed))
             {
                 appearanceDialog=dialog;
-                try { dialog.ShowDialog(this); }
-                finally { appearanceDialog=null; }
+                appearancePanelIndex=index;
+                try { ApplyVisibility();dialog.ShowDialog(this); }
+                finally { appearanceDialog=null;appearancePanelIndex=-1;ApplyVisibility(); }
             }
         }
         void OpacityChanged(bool isPedal,int value)
@@ -319,12 +345,21 @@ namespace Arthur.LmuOverlay
         }
         void ApplyVisibility()
         {
+            if(!GameRunning())
+            {
+                foreach(var panel in panels)panel.SetRequestedVisibility(false);
+                voiceOverlay.Clear();voiceRecordingWasValid=false;
+                if(voiceDictation.Recording&&!voiceStopRequested){voiceStopRequested=true;voiceStopAt=Now;voiceDictation.Cancel();}
+                trayVisibility.Enabled=false;return;
+            }
             double now=Now;bool editing=positioning.Checked;
-            bool gameFocused=IsGameForeground(Win32.GetForegroundWindow(),now);
-            pedals.SetRequestedVisibility(visibility.ShouldShow(settings.ShowPedals,Current,now,editing,gameFocused));
-            table.SetRequestedVisibility(visibility.ShouldShow(settings.ShowTable,Current,now,editing,gameFocused));
+            IntPtr foreground=Win32.GetForegroundWindow();
+            bool gameFocused=IsGameForeground(foreground,now);
+            bool controllerFocused=foreground==Handle || (appearanceDialog!=null && foreground==appearanceDialog.Handle);
+            pedals.SetRequestedVisibility(appearancePanelIndex==0 || visibility.ShouldShow(settings.ShowPedals,Current,now,editing,gameFocused,controllerFocused));
+            table.SetRequestedVisibility(appearancePanelIndex==1 || visibility.ShouldShow(settings.ShowTable,Current,now,editing,gameFocused,controllerFocused));
             for(int i=0;i<extras.Length;i++)
-                extras[i].SetRequestedVisibility(visibility.ShouldShow(settings.Widgets[i].Visible,Current,now,editing,gameFocused));
+                extras[i].SetRequestedVisibility(appearancePanelIndex==i+2 || visibility.ShouldShow(settings.Widgets[i].Visible,Current,now,editing,gameFocused,controllerFocused));
             trayVisibility.Enabled=visibility.CanToggle(Current,now,editing);
             trayVisibility.Text=editing ? "Conclua o posicionamento para ocultar" :
                 !trayVisibility.Enabled ? "Mostrar / ocultar: disponível na pista" :
@@ -445,6 +480,7 @@ namespace Arthur.LmuOverlay
             }
             wheelAxes=wheel.Read(now);
             PollTrainingButtons(now);
+            PollVoiceChat(now);
             PhysicalWheelState.Apply(Current,settings.UsePhysicalWheel,settings.WheelCalibration,wheelAxes,settings.WheelMaximumRotation,settings.CarMaximumRotation);
             Display=motion.Step(Current,now,settings.SmoothMotion);Display.Delta=deltaMotion.Step(Current.Delta,settings.DeltaReference,now,settings.SmoothMotion);
             // Hide on state changes even while another app or a tray popup has focus.
@@ -469,10 +505,14 @@ namespace Arthur.LmuOverlay
                 lastMaintenance=now;
                 if(Interlocked.Exchange(ref displayRefresh,0)!=0)
                 { foreach(var panel in panels) { panel.ResetSurface();panel.FitSize(); }AppLog.Write("Mudança de vídeo: painéis reajustados",null); }
-                foreach(var panel in panels) panel.EnsureVisible();
-                TopMost=panelActive && !learningActive;
-                if(learningWindow!=null && !learningWindow.IsDisposed) learningWindow.TopMost=learningActive;
-                if(panelActive) Win32.SetWindowPos(learningActive ? learningWindow.Handle : editorActive ? appearanceDialog.Handle : Handle,new IntPtr(-1),0,0,0,0,0x213);
+                if(IsGameForeground(foreground,now))
+                {
+                    foreach(var panel in panels) panel.EnsureVisible();
+                    if(voiceOverlay.Visible) Win32.SetWindowPos(voiceOverlay.Handle,new IntPtr(-1),0,0,0,0,0x213);
+                }
+                bool controllerTopmost=panelActive && !learningActive;
+                if(TopMost!=controllerTopmost) TopMost=controllerTopmost;
+                if(learningWindow!=null && !learningWindow.IsDisposed && learningWindow.TopMost!=learningActive) learningWindow.TopMost=learningActive;
                 status.Text=pedals.RenderStatus.Length>0 ? pedals.RenderStatus : table.RenderStatus.Length>0 ? table.RenderStatus : Current.Status;
                 status.ForeColor=Current.HasTelemetry ? Theme.Throttle : Theme.Muted;
                 flagStatus.Text=countries.Status;deltaStatus.Text=Current.Delta.Context+"\n"+(Format.Finite(Current.Delta.Values[settings.DeltaReference])?"Comparando: "+DeltaMode.Names[settings.DeltaReference]:Current.Delta.Reason)+"\n"+Current.Delta.Storage;
@@ -483,6 +523,7 @@ namespace Arthur.LmuOverlay
         }
         bool IsGameForeground(IntPtr foreground,double now)
         {
+            if(!GameRunning())return false;
             if(foreground==IntPtr.Zero) return false;
             if(Current.GameWindow!=0 && unchecked((ulong)foreground.ToInt64())==Current.GameWindow) return true;
             uint id;Win32.GetWindowThreadProcessId(foreground,out id);
@@ -530,7 +571,7 @@ namespace Arthur.LmuOverlay
                 for(int i=1;i<=4;i++) Win32.UnregisterHotKey(Handle,i);
                 foreach(var panel in panels) panel.Close();pump.LearningSample=null;pump.Dispose();deltaRepository.Dispose();learning.Dispose();
                 if(learningWindow!=null && !learningWindow.IsDisposed) learningWindow.Close();
-                countries.Dispose();steeringSetup.Dispose();vehicleDamage.Dispose();penalties.Dispose();wheel.Dispose();tray.Visible=false;tray.Dispose();trayMenu.Dispose();timer.Dispose();saveTimer.Dispose();
+                voiceDictation.Dispose();voiceOverlay.Dispose();countries.Dispose();steeringSetup.Dispose();vehicleDamage.Dispose();penalties.Dispose();wheel.Dispose();tray.Visible=false;tray.Dispose();trayMenu.Dispose();timer.Dispose();saveTimer.Dispose();
             }
             base.OnFormClosed(e);
         }

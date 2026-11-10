@@ -24,7 +24,7 @@ compiler = [str(Path(args.dotnet).resolve()), str(Path(args.csc).resolve()),
             '/nostdlib+', '/optimize+']
 compiler += ['/r:' + str(refs / (name + '.dll')) for name in
              ['mscorlib', 'System', 'System.Core', 'System.Xml', 'System.Drawing',
-              'System.Windows.Forms', 'System.Runtime.Serialization', 'System.IO.Compression']]
+              'System.Windows.Forms', 'System.Runtime.Serialization', 'System.Speech', 'System.IO.Compression']]
 resources = ['/resource:assets/Flags.zip,Flags.zip',
              '/resource:assets/BrandLogo.png,BrandLogo.png',
              '/resource:assets/CarLogos.zip,CarLogos.zip']

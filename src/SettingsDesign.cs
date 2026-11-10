@@ -158,6 +158,7 @@ namespace Arthur.LmuOverlay
             hotkey.Dock=DockStyle.Fill;hotkey.ForeColor=Theme.Rpm;hotkey.Font=new Font(Theme.DataFont,16,FontStyle.Bold);hotkey.TextAlign=ContentAlignment.MiddleRight;table.Controls.Add(hotkey,1,0);
             var description=Label("Funciona durante a pilotagem. No menu ou na garagem, os cards ficam ocultos automaticamente.",44);description.ForeColor=Theme.Muted;description.Dock=DockStyle.Fill;table.Controls.Add(description,0,1);table.SetColumnSpan(description,2);
             var bind=Button("Definir atalho",BindKey);bind.Margin=new Padding(0,6,0,0);table.Controls.Add(bind,0,2);
+            BuildVoiceChatSettings(page);
             var fixedKeys=new SettingsCard { Height=113,Margin=new Padding(0,0,0,20) };page.Controls.Add(fixedKeys);
             var keys=Label("Ctrl + Alt + O     Abrir configuração\nCtrl + Alt + L     Posicionar / travar\nEsc                       Concluir posicionamento",82);keys.Dock=DockStyle.Fill;keys.BackColor=Theme.Surface;fixedKeys.Controls.Add(keys);
             page.Controls.Add(Check("Consultar bandeiras do lobby",settings.Flags,v=>{settings.Flags=v;Changed();}));flagStatus.Height=32;flagStatus.ForeColor=Theme.Muted;flagStatus.Font=new Font(Theme.BodyFont,9);page.Controls.Add(flagStatus);

@@ -39,8 +39,10 @@ partial class Checks
   Assert(jitterRepo.Saved!=null&&finish.Delta.ReferenceTimes[0]==100,"small scoring jitter and initial uninitialized count flag do not discard a complete valid reference");
   var visibility=new OverlayVisibility();var visible=DFrame(10,0,100);visible.ReadAt=10;
   Assert(visibility.ShouldShow(true,visible,10,false,true)&&!visibility.ShouldShow(true,visible,10,false,false),"Alt-Tab hides enabled delta and all sibling cards");
+  Assert(visibility.ShouldShow(true,visible,10,false,false,true),"finishing positioning keeps the panels visible while the controller has focus");
   visibility.Toggle(visible,10,false);
   Assert(!visibility.ShouldShow(true,visible,10,false,true),"returning focus preserves F8 hidden state");
+  Assert(!visibility.ShouldShow(true,visible,10,false,false,true),"controller focus does not override F8 hidden state");
   Assert(visibility.ShouldShow(true,visible,10,true,false),"positioning remains available outside game focus");
   using(var painter=new Painter())using(var thin=new System.Drawing.Bitmap(460,90))using(var thick=new System.Drawing.Bitmap(460,90)){
    visible.Delta=new DeltaState{Values=new[]{-.5,-.5,-.5}};
