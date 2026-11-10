@@ -1,12 +1,17 @@
-# Chat por voz 0.12.10
+# Chat por voz 0.12.11
 
-O instalador completo contém o aplicativo, o `whisper-cli.exe`, suas DLLs e o modelo inglês. Não é necessário selecionar os arquivos ou baixar o modelo após instalar.
+O instalador completo contém o aplicativo, o Whisper, suas DLLs e o modelo inglês. Não é necessário baixar arquivos separados. As configurações e posições dos painéis são preservadas.
 
-1. No Arts, abra **Falar no chat do LMU**, selecione o microfone, escolha **Vincular botão** para um botão físico do volante ou **Vincular tecla** para uma tecla/combinação de teclado, e marque **Ativar envio automático**.
-2. No LMU, configure **Realtime Chat = Enter**. Entre na pista com o jogo em primeiro plano.
-3. Segure o botão/atalho enquanto fala (até 12 segundos), depois solte. O indicador mostra **Ouvindo**, **Transcrevendo** e **Concluído** ou o motivo da falha. O último estado permanece cinco segundos.
-4. Para diagnóstico, observe a última mensagem na seção de voz do painel. **Concluído** significa que o comando de digitação foi enviado ao Windows; o jogo ainda precisa aceitar essa entrada no chat.
+1. No Arts, abra **Falar no chat do LMU**, escolha o microfone e mantenha **Ativar envio automático** marcado.
+2. Em **Envio ao chat**, use **Digitar automaticamente (recomendado)**. Este é o padrão ao atualizar: não depende de o LMU aceitar Ctrl+V.
+3. No LMU, configure **Realtime Chat = Enter**. Entre na pista com o jogo em primeiro plano e o chat fechado.
+4. Segure o botão/tecla de voz, fale e solte. Aguarde **Ouvindo → Transcrevendo → Enviando → Concluído** antes da próxima gravação. O resultado fica visível por cinco segundos.
+5. O Arts abre o chat com Enter, digita a frase por teclas e confirma com Enter. Cada tecla permanece pressionada por 70 ms, com intervalo entre teclas. Frases longas levam mais tempo; o máximo é 180 caracteres. Não mexa no chat durante a sequência.
 
-Teste manual necessário no LMU online: confirme que Enter abre o chat, que a mensagem aparece na caixa e que Enter a publica. O teste automatizado do build valida o executável Whisper e a transcrição com o modelo incluído, mas não consegue simular o jogo, o volante, o microfone nem o EAC.
+A opção **Colar com Ctrl+V (compatibilidade)** permanece disponível, com as mesmas pausas nas teclas. Ela copia a frase para a área de transferência e depende de suporte à colagem no chat. Não há tentativa automática de trocar de modo ou reenviar: isso poderia publicar duas mensagens.
 
-Envio 0.12.10: a transcrição é copiada para a área de transferência, o app abre o chat com Enter, espera 350 ms, cola com Ctrl+V, espera 250 ms e envia com Enter. A última frase fica na área de transferência. O chat deve estar fechado antes da gravação. Se o LMU perder o foco durante a sequência, as etapas restantes são canceladas.
+Ao perder o foco, sair da pista ou desativar a função, o envio para e as teclas pressionadas pelo app são soltas. Se uma sequência for interrompida com a caixa aberta, feche o chat manualmente antes de tentar de novo. O app não consegue consultar se a caixa do LMU está aberta ou se a mensagem foi recebida. **Concluído** indica que o Windows aceitou a sequência, não uma confirmação do servidor.
+
+Se ainda falhar, clique em **Abrir diagnóstico do envio**. O arquivo registra modo, quantidade de caracteres, etapas e erros, sem registrar o texto da conversa. Ele fica em `%LOCALAPPDATA%\ArthurLMUOverlay\erro.txt`. Informe se parou ao abrir, ao digitar ou ao confirmar e envie esse arquivo. Jogo e Arts devem estar no mesmo nível de permissão; não é necessário desligar o EAC para usar voz.
+
+Validação automatizada: comandos com duração, três envios consecutivos, cancelamento, liberação de teclas após erro, modelo de transcrição e testes de interface Windows. O receptor simulado a 30 Hz demonstra que a sequência antiga de 0.12.10 podia passar sem nenhuma tecla detectada. Isso não comprova qual mecanismo de entrada o LMU usa; a recepção dentro do jogo precisa ser validada nele.

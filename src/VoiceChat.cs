@@ -68,36 +68,43 @@ namespace Arthur.LmuOverlay
   [StructLayout(LayoutKind.Explicit)] struct INPUTUNION {[FieldOffset(0)]public KEYBDINPUT ki;[FieldOffset(0)]public MOUSEINPUT mi;}
   [StructLayout(LayoutKind.Sequential)] struct KEYBDINPUT {public ushort vk,scan;public uint flags,time;public IntPtr extra;}
   [DllImport("user32.dll",SetLastError=true)] static extern uint SendInput(uint count,[In] INPUT[] inputs,int size);
-  [DllImport("user32.dll")] static extern uint MapVirtualKey(uint code,uint kind);
-  static void Key(ushort code,bool up)
+  [DllImport("user32.dll")] static extern uint MapVirtualKeyEx(uint code,uint kind,IntPtr layout);
+  [DllImport("user32.dll")] static extern short VkKeyScanEx(char ch,IntPtr layout);
+  [DllImport("user32.dll")] static extern IntPtr GetKeyboardLayout(uint thread);
+  [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr window,out uint process);
+  [DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
+  [DllImport("user32.dll")] static extern short GetKeyState(int key);
+  static int sending;
+  static void Key(ushort code,bool up,bool unicode,IntPtr layout)
   {
-   var v=new INPUT{type=1,u=new INPUTUNION{ki=new KEYBDINPUT{scan=(ushort)MapVirtualKey(code,0),flags=(uint)(8|(up?2:0))}}};
-   if(SendInput(1,new[]{v},Marshal.SizeOf(typeof(INPUT)))!=1)throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+   uint scan=unicode?code:MapVirtualKeyEx(code,4,layout);
+   if(scan==0)throw new InvalidOperationException("Tecla sem mapeamento no teclado ativo: "+code);
+   uint flags=(uint)((unicode?4:8)|(up?2:0));
+   if(!unicode&&(scan&0xff00)==0xe000)flags|=1;
+   var v=new INPUT{type=1,u=new INPUTUNION{ki=new KEYBDINPUT{scan=(ushort)(unicode?scan:scan&255),flags=flags}}};
+   if(SendInput(1,new[]{v},Marshal.SizeOf(typeof(INPUT)))!=1)
+    throw new InvalidOperationException("O Windows não aceitou a tecla. Verifique se jogo e Arts usam o mesmo nível de permissão. Código: "+Marshal.GetLastWin32Error());
   }
-  public static Task<bool> SendAsync(string message,Func<bool> gameFocused)
+  public static async Task<bool> SendAsync(string message,Func<bool> gameFocused,bool paste,Action<string> stage)
   {
-   return SendSequence(message,gameFocused,text=>{
-    var data=new DataObject();data.SetData(DataFormats.UnicodeText,text);
-    Clipboard.SetDataObject(data,true,5,40);
-   },Key,ms=>Task.Delay(ms));
+   if(Interlocked.CompareExchange(ref sending,1,0)!=0)throw new InvalidOperationException("Já existe um envio em andamento.");
+   try{
+    IntPtr window=GetForegroundWindow();uint process;IntPtr layout=GetKeyboardLayout(GetWindowThreadProcessId(window,out process));
+    Func<bool> focused=()=>GetForegroundWindow()==window&&gameFocused();
+    // Wait for a keyboard PTT modifier to be released; do not release user-held keys.
+    for(int i=0;i<40&&(ModifiersHeld());i++){if(!focused())return false;await Task.Delay(50);}
+    if(ModifiersHeld())throw new InvalidOperationException("Solte Ctrl, Alt, Shift ou Windows antes do envio.");
+    Func<char,int> map=c=>{
+     int value=VkKeyScanEx(c,layout);
+     if(value>=0&&char.IsLetter(c)&&(GetKeyState(20)&1)!=0)value^=256;
+     return value;
+    };
+    return await VoiceChatDelivery.Send(message,paste,focused,text=>{
+     var data=new DataObject();data.SetData(DataFormats.UnicodeText,text);Clipboard.SetDataObject(data,true,5,40);
+    },map,(code,up,unicode)=>Key(code,up,unicode,layout),ms=>Task.Delay(ms),stage);
+   }finally{Interlocked.Exchange(ref sending,0);}
   }
-  // Run on the Windows UI context so clipboard access stays on the STA thread.
-  public static async Task<bool> SendSequence(string message,Func<bool> gameFocused,Action<string> copy,Action<ushort,bool> key,Func<int,Task> delay)
-  {
-   message=(message??"").Replace("\r"," ").Replace("\n"," ").Trim();
-   if(message.Length==0||message.Length>180||!gameFocused())return false;
-   copy(message);
-   if(!gameFocused())return false;
-   key(13,false);key(13,true);
-   await delay(350);
-   if(!gameFocused())return false;
-   key(17,false);
-   try { key(86,false);key(86,true); }
-   finally { key(17,true); }
-   await delay(250);
-   if(!gameFocused())return false;
-   key(13,false);key(13,true);
-   return true;
-  }
+  static bool ModifiersHeld(){foreach(int k in new[]{16,17,18,91,92})if((GetAsyncKeyState(k)&0x8000)!=0)return true;return false;}
  }
 }

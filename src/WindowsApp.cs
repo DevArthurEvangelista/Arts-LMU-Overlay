@@ -39,6 +39,7 @@ namespace Arthur.LmuOverlay
         [DataMember] public int DeltaThickness=16;
         [DataMember] public TrainingWheelBinding TrainingSaveButton,TrainingRestoreButton,VoiceChatButton;
         [DataMember] public bool VoiceChatEnabled;
+        [DataMember] public bool VoiceChatPaste;
         [DataMember] public int VoiceChatKey,VoiceChatModifiers;
         [DataMember] public string VoiceWhisperExecutable="",VoiceWhisperModel="",VoiceLanguage="en";
         [DataMember] public int VoiceMicrophone=-1;
