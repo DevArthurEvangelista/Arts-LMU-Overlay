@@ -90,30 +90,30 @@ Section "Arts LMU OVERLAY" SEC_MAIN
   SetOverwrite on
 
   !insertmacro SmoothProgress "Instalando núcleo gráfico e motor de telemetria..."
-  File "../LMUOverlay.exe"
-  File "../LMUOverlay.exe.config"
+  File "..\LMUOverlay.exe"
+  File "..\LMUOverlay.exe.config"
 
   !insertmacro SmoothProgress "Configurando bibliotecas de áudio e captura DirectInput..."
-  File "../NAudio*.dll"
+  File "..\NAudio*.dll"
 
   !insertmacro SmoothProgress "Integrando runtime supervisionado Sector (treino offline)..."
-  File "../assets/SectorRuntime-1.0.0.zip"
-  File "../LEIA-ME.txt"
+  File "..\assets\SectorRuntime-1.0.0.zip"
+  File "..\LEIA-ME.txt"
 
-!if /FileExists "../Whisper\whisper-cli.exe"
+!if /FileExists "..\Whisper\whisper-cli.exe"
   !insertmacro SmoothProgress "Instalando motor local de reconhecimento de voz (Whisper)..."
   SetOutPath "$INSTDIR\Whisper"
-  File "../Whisper\*.*"
+  File "..\Whisper\*.*"
 !endif
 
   !insertmacro SmoothProgress "Registrando licenças de terceiros e documentação..."
   SetOutPath "$INSTDIR\Licencas"
-  File /oname=SharedMemory-MIT.txt "../third_party/License.txt"
-  File /oname=Bandeiras-MIT.txt "../third_party/flag-icons-LICENSE.txt"
-  File /oname=Instalador-NSIS.txt "../third_party/NSIS-LICENSE.txt"
-  File /oname=SimpleIcons-CC0.txt "../third_party/SimpleIcons-LICENSE.md"
-  File /oname=Marcas-dos-carros.txt "../third_party/CarLogos-NOTICE.txt"
-  File /oname=Sector-MIT.txt "../third_party/Sector-MIT.txt"
+  File /oname=SharedMemory-MIT.txt "..\third_party\License.txt"
+  File /oname=Bandeiras-MIT.txt "..\third_party\flag-icons-LICENSE.txt"
+  File /oname=Instalador-NSIS.txt "..\third_party\NSIS-LICENSE.txt"
+  File /oname=SimpleIcons-CC0.txt "..\third_party\SimpleIcons-LICENSE.md"
+  File /oname=Marcas-dos-carros.txt "..\third_party\CarLogos-NOTICE.txt"
+  File /oname=Sector-MIT.txt "..\third_party\Sector-MIT.txt"
 
   !insertmacro SmoothProgress "Criando atalhos na Área de Trabalho e no Menu Iniciar..."
   SetOutPath "$INSTDIR"
