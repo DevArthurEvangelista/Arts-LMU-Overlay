@@ -5,16 +5,20 @@ Unicode true
 !include "FileFunc.nsh"
 
 Name "Arts LMU OVERLAY"
-OutFile "../Instalar-Arts-LMU-Overlay-0.12.4.exe"
+OutFile "../Instalar-Arts-LMU-Overlay-0.12.11.exe"
 InstallDir "$LOCALAPPDATA\Programs\ArthurLMUOverlay"
 InstallDirRegKey HKCU "Software\ArthurLMUOverlay" "InstallDirectory"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma
 BrandingText "Arts LMU OVERLAY"
-VIProductVersion "0.12.4.0"
+ShowInstDetails show
+VIProductVersion "0.12.11.0"
 VIAddVersionKey /LANG=1046 "ProductName" "Arts LMU OVERLAY"
-VIAddVersionKey /LANG=1046 "FileDescription" "Instalação local do Arts LMU OVERLAY para Windows"
-VIAddVersionKey /LANG=1046 "FileVersion" "0.12.4"
+VIAddVersionKey /LANG=1046 "CompanyName" "Arthur Gabriel Evangelista Santos"
+VIAddVersionKey /LANG=1046 "FileDescription" "Instalador oficial do Arts LMU OVERLAY para Windows"
+VIAddVersionKey /LANG=1046 "FileVersion" "0.12.11"
+VIAddVersionKey /LANG=1046 "ProductVersion" "0.12.11"
+VIAddVersionKey /LANG=1046 "OriginalFilename" "Instalar-Arts-LMU-Overlay-0.12.11.exe"
 VIAddVersionKey /LANG=1046 "LegalCopyright" "Arts LMU OVERLAY • Arthur"
 
 !define MUI_ICON "../assets/App.ico"
@@ -32,6 +36,18 @@ VIAddVersionKey /LANG=1046 "LegalCopyright" "Arts LMU OVERLAY • Arthur"
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "PortugueseBR"
+
+!macro SmoothProgress MSG
+  DetailPrint "${MSG}"
+  Sleep 90
+  Sleep 90
+  Sleep 90
+  Sleep 90
+  Sleep 90
+  Sleep 90
+  Sleep 90
+  Sleep 90
+!macroend
 
 !macro CheckRunning PREFIX
 Function ${PREFIX}CheckRunning
@@ -69,12 +85,28 @@ Function un.onInit
 FunctionEnd
 
 Section "Arts LMU OVERLAY" SEC_MAIN
+  !insertmacro SmoothProgress "Verificando ambiente Windows x64 e .NET Framework 4.8..."
   SetOutPath "$INSTDIR"
   SetOverwrite on
+
+  !insertmacro SmoothProgress "Instalando núcleo gráfico e motor de telemetria..."
   File "../LMUOverlay.exe"
   File "../LMUOverlay.exe.config"
+
+  !insertmacro SmoothProgress "Configurando bibliotecas de áudio e captura DirectInput..."
+  File "../NAudio*.dll"
+
+  !insertmacro SmoothProgress "Integrando runtime supervisionado Sector (treino offline)..."
   File "../assets/SectorRuntime-1.0.0.zip"
   File "../LEIA-ME.txt"
+
+!if /FileExists "../Whisper\whisper-cli.exe"
+  !insertmacro SmoothProgress "Instalando motor local de reconhecimento de voz (Whisper)..."
+  SetOutPath "$INSTDIR\Whisper"
+  File "../Whisper\*.*"
+!endif
+
+  !insertmacro SmoothProgress "Registrando licenças de terceiros e documentação..."
   SetOutPath "$INSTDIR\Licencas"
   File /oname=SharedMemory-MIT.txt "../third_party/License.txt"
   File /oname=Bandeiras-MIT.txt "../third_party/flag-icons-LICENSE.txt"
@@ -82,16 +114,20 @@ Section "Arts LMU OVERLAY" SEC_MAIN
   File /oname=SimpleIcons-CC0.txt "../third_party/SimpleIcons-LICENSE.md"
   File /oname=Marcas-dos-carros.txt "../third_party/CarLogos-NOTICE.txt"
   File /oname=Sector-MIT.txt "../third_party/Sector-MIT.txt"
+
+  !insertmacro SmoothProgress "Criando atalhos na Área de Trabalho e no Menu Iniciar..."
   SetOutPath "$INSTDIR"
   WriteUninstaller "$INSTDIR\Desinstalar-LMU-Overlay.exe"
   Delete "$DESKTOP\LMU Overlay.lnk"
   Delete "$SMPROGRAMS\LMU Overlay.lnk"
   CreateShortcut "$DESKTOP\Arts LMU OVERLAY.lnk" "$INSTDIR\LMUOverlay.exe" "" "$INSTDIR\LMUOverlay.exe" 0
   CreateShortcut "$SMPROGRAMS\Arts LMU OVERLAY.lnk" "$INSTDIR\LMUOverlay.exe" "" "$INSTDIR\LMUOverlay.exe" 0
+
+  !insertmacro SmoothProgress "Finalizando registro da instalação e preservando preferências..."
   WriteRegStr HKCU "Software\ArthurLMUOverlay" "InstallDirectory" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayName" "Arts LMU OVERLAY"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayVersion" "0.12.4"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "Publisher" "Arthur"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayVersion" "0.12.11"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "Publisher" "Arthur Gabriel Evangelista Santos"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayIcon" "$INSTDIR\LMUOverlay.exe,0"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "UninstallString" '"$INSTDIR\Desinstalar-LMU-Overlay.exe"'
@@ -99,6 +135,8 @@ Section "Arts LMU OVERLAY" SEC_MAIN
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "NoRepair" 1
   ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "EstimatedSize" $0
+  DetailPrint "Instalação do Arts LMU OVERLAY concluída com sucesso."
+  Sleep 400
 SectionEnd
 
 Section "Uninstall"
@@ -107,9 +145,12 @@ Section "Uninstall"
   Delete "$DESKTOP\Arts LMU OVERLAY.lnk"
   Delete "$SMPROGRAMS\Arts LMU OVERLAY.lnk"
   Delete "$INSTDIR\LMUOverlay.exe"
+  Delete "$INSTDIR\NAudio*.dll"
   Delete "$INSTDIR\LMUOverlay.exe.config"
   Delete "$INSTDIR\SectorRuntime-1.0.0.zip"
   Delete "$INSTDIR\LEIA-ME.txt"
+  Delete "$INSTDIR\Whisper\*.*"
+  RMDir "$INSTDIR\Whisper"
   Delete "$INSTDIR\Licencas\SharedMemory-MIT.txt"
   Delete "$INSTDIR\Licencas\Bandeiras-MIT.txt"
   Delete "$INSTDIR\Licencas\Instalador-NSIS.txt"

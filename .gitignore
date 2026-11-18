@@ -8,15 +8,29 @@
 *.suo
 __pycache__/
 *.pyc
+NAudio*.dll
 Instalar-Arts-LMU-Overlay-*.exe
 SectorRuntime-1.0.0.zip
 SHA256.txt
+
+# Runtime e modelos locais do Whisper (>100 MB; distribuídos via instalador/Release)
+Whisper/
+*.gguf
+*.bin
+!tests/lmu-fixture.bin
+
 # Saídas dos testes; dados locais pessoais nunca entram no repositório
 tests/render-*/
 tests/arts-v09-testdata/
-# Configurações e logs locais
+
+# Configurações, históricos e logs locais
 config.xml
 config.xml.bak
+erro.txt
+erro.txt.anterior
+diagnostico.txt
 *.log
 TreinoSector/
 SectorRuntime/
+Aprendizado/
+ReferenciasDelta/

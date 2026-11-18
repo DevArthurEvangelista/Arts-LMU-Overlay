@@ -64,6 +64,13 @@ static class AppearanceUiChecks
         Assert(settings.DeltaReference==2 && settings.DeltaOpacity==0 && settings.DeltaRange==5 && settings.Appearance[6].FontPercent==140 && settings.Widgets[4].X==730,"delta reference, opacity, font, range and position reopen exactly");
         settings.DeltaReference=99;settings.DeltaOpacity=-20;settings.DeltaRange=999;settings.Save();settings=AppSettings.Load(out warning);
         Assert(settings.DeltaReference==2 && settings.DeltaOpacity==0 && settings.DeltaRange==10,"delta invalid settings are bounded");
+        settings.VoiceChatEnabled=true;settings.VoiceChatPaste=true;settings.VoiceChatKey=(int)Keys.V;settings.VoiceChatModifiers=5;settings.VoiceLanguage="pt";settings.VoiceMicrophone=2;
+        Assert(settings.Save()=="","0.12.11 voice chat preferences save cleanly");
+        settings=AppSettings.Load(out warning);
+        Assert(settings.VoiceChatEnabled && settings.VoiceChatPaste && settings.VoiceChatKey==(int)Keys.V && settings.VoiceChatModifiers==5 && settings.VoiceLanguage=="pt" && settings.VoiceMicrophone==2,"0.12.11 voice chat key, paste mode, language and mic reopen intact");
+        settings.VoiceChatKey=(int)Keys.F12;settings.VoiceChatModifiers=99;settings.VoiceLanguage="es";settings.VoiceMicrophone=-9;settings.Save();
+        settings=AppSettings.Load(out warning);
+        Assert(settings.VoiceChatKey==0 && (settings.VoiceChatModifiers&~7)==0 && settings.VoiceLanguage=="en" && settings.VoiceMicrophone==-1,"invalid voice chat key/language/mic values normalize safely");
         if(args.Length>1 && args[1]=="--config-only") { Console.WriteLine("PASS: "+checks+" real application migration and save/reopen checks.");return; }
         Application.EnableVisualStyles();Application.SetCompatibleTextRenderingDefault(false);
         Size actual=new Size(760,280);int writes=0;

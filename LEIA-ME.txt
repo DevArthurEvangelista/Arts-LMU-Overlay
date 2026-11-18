@@ -1,3 +1,7 @@
+ATUALIZAÇÃO 0.12.11
+- Chat por voz no LMU com modelo Whisper local (experimental): segure um botão do volante ou uma tecla vinculada na pista, fale e solte para transcrever localmente e enviar ao Realtime Chat do LMU (via digitação automática ou colagem Ctrl+V), com indicador visual na pista ("Ouvindo", "Transcrevendo", "Enviando").
+- Visibilidade e foco aprimorados: todos os cards ocultam imediatamente quando o processo Le Mans Ultimate é encerrado; durante o ajuste de aparência de um card com o jogo na pista, o card permanece visível para pré-visualização em tempo real; proteção reforçada no Alt+Tab para não sobrepor outras janelas do Windows.
+
 ATUALIZAÇÃO 0.12.4
 Corrigida desconexão intermitente por status.json ocupado. Leitura compartilhada com troca atômica; conflitos breves são repetidos sem encerrar o treino. Bloqueios persistentes por 3 segundos ainda encerram a conexão.
 

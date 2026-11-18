@@ -2,40 +2,79 @@
 
 **Mais informação na pista. Mais clareza para evoluir a cada volta.**
 
-O Arts LMU OVERLAY é um projeto independente para **Le Mans Ultimate**, criado por um piloto que queria enxergar melhor a corrida e entender onde poderia ganhar tempo. Os painéis aparecem sobre o jogo e reúnem classificação, pedais, volante, pneus, voltas e comparação de desempenho em uma interface que você pode organizar do seu jeito.
+O **Arts LMU OVERLAY** (`v0.12.11`) é um overlay e assistente de telemetria independente para **Le Mans Ultimate** no Windows, pensado para entregar leitura rápida durante a pilotagem, personalização individual por card e ferramentas práticas de evolução de ritmo.
 
-> As imagens desta página são prévias do aplicativo com **dados ilustrativos**. Elas mostram a aparência dos painéis, não uma captura de uma sessão real do LMU.
+### ⬇️ Download Direto (Somente o Instalador `.exe`)
 
-## A corrida, sem perder o contexto
+Não é necessário baixar a pasta de código do projeto — clique abaixo para baixar apenas o instalador pronto para Windows x64:
 
-A classificação destaca sua posição e mostra quem está perto de você, o líder da classe, tempos de volta, diferença, composto de pneu, paradas e penalidades. Em uma corrida multiclasse, a atenção fica na **sua classe**.
+👉 **[Baixar Instalar-Arts-LMU-Overlay-0.12.11.exe](https://github.com/DevArthurEvangelista/Arts-LMU-Overlay/releases/latest/download/Instalar-Arts-LMU-Overlay-0.12.11.exe)** *(ou acesse a [página de Releases](https://github.com/DevArthurEvangelista/Arts-LMU-Overlay/releases/latest))*
 
-## Sinta o que o carro está fazendo
+> **Nota do Windows ao instalar:** por ser um projeto independente sem certificado comercial pago, na primeira execução o Windows SmartScreen pode exibir *"O Windows protegeu o computador"*. Basta clicar em **Mais informações** → **Executar assim mesmo**.
 
-Acompanhe o uso do freio e do acelerador em um gráfico dos **últimos 10 segundos**. Ao lado, veja as barras dos pedais, marcha, velocidade, giro do motor e a representação do volante. O arco de RPM ajuda a perceber o momento da troca de marcha.
+> **Nota sobre imagens:** a prévia abaixo é gerada pelo próprio motor gráfico do aplicativo com **dados ilustrativos**. Ela demonstra o acabamento visual dos painéis, não uma captura de sessão real dentro do LMU.
 
 ![Painel de pedais, volante, RPM, marcha e velocidade](docs/Previa-Arts-LMU-Overlay-0.11.0.png)
 
-## Cuide da volta inteira
+---
 
-Os painéis opcionais ajudam a acompanhar pneus e danos, tempo de volta, combustível e o traçado da pista. Você escolhe o que quer deixar visível e ajusta posição, tamanho, fonte e transparência dos cards.
+## Principais Funcionalidades
 
-## Descubra onde está perdendo tempo
+- **Quadro de Classificação da Classe:** colunas fixas (`POS`, `+/−`, `GER`, `PILOTO / CARRO`, `ÚLTIMA`, `MELHOR`, `PNEU`, `GAP GER.` / `Δ SUA VOLTA`, `PEN.`, `BOX`), líder destacado, vizinhos de pista, bandeiras de nacionalidade, logos de fabricantes, compostos de pneus por cor e penalidades (`DT`, `SG` e tempo).
+- **Pedais, Motor e Volante 1:1:** histórico dos **últimos 10 segundos** de freio e acelerador, barras verticais (freio à esquerda, acelerador à direita), arco circular de RPM com alerta visual de troca de marcha, marcha/limitador de box, velocidade e rotação real do volante físico via DirectInput.
+- **Delta Central Transparente:** barra horizontal limpa com espessura configurável (`6–28 px`) comparando em tempo real contra sua melhor volta da sessão, melhor pessoal salva (por pista/carro/classe) ou última volta válida.
+- **Cards Opcionais Independentes:**
+  - **Pneus e Danos:** temperatura superficial, pressão (`bar`), desgaste restante, avisos de pneu furado/roda solta e condição de suspensão (`SUSP.`) e aerodinâmica geral (`AERO`).
+  - **Lap Timer:** volta atual, última, melhor, previsão estimada e voltas concluídas.
+  - **Combustível:** volume no tanque, média por volta, autonomia estimada e cálculo para completar a sessão.
+  - **Mapa da Pista:** traçado formado por coordenadas reais exibindo as posições da sua classe.
+- **Módulo Aprendizado:** janela dedicada para revisar voltas válidas/inválidas da sessão e comparar setores oficiais (`S1`, `S2`, `S3`) e microsetores estimados (`100 m`, `200 m` ou `500 m`) no mapa — inclusive frente aos tempos setoriais de outros pilotos da sessão (sem capturar pedais de terceiros).
+- **Treino por Trecho Offline *(Experimental)*:** integração supervisionada com o runtime oficial [Sector](https://github.com/sector-lmu/Sector) (`v1.0.0`) para salvar um ponto da pista (`F6`) e retornar a ele (`F7`) ou por botões vinculados do volante. **Funciona exclusivamente em treino offline iniciado sem Easy Anti-Cheat (EAC) em versão compatível do LMU.**
+- **Chat por Voz Local com Whisper *(Experimental)*:** segure um botão do volante ou tecla vinculada na pista, fale e solte para transcrever localmente via `whisper.cpp` (sem nuvem) e enviar ao *Realtime Chat* do LMU, com indicador visual na tela.
 
-O **delta** mostra, durante a volta, se você está ganhando ou perdendo tempo em relação à referência escolhida. No módulo de aprendizado, você pode revisitar suas voltas e comparar setores e trechos no mapa para enxergar onde há espaço para melhorar.
+---
 
-No **treino por trecho**, você pode salvar um ponto e retornar a ele para repetir uma curva. Há opção de vincular botões do volante para salvar e retornar. Esse recurso é exclusivo do **treino offline compatível**, iniciado sem Easy Anti-Cheat; ele não funciona nas sessões online, classificação ou corrida. É uma integração experimental e depende da versão do jogo suportada.
+## Atalhos Padrão
 
-## Feito para acompanhar sua pilotagem
+| Atalho | Ação | Contexto |
+| :--- | :--- | :--- |
+| `F8` *(configurável)* | Mostrar / ocultar todos os overlays | Na pista |
+| `Ctrl + Alt + O` | Abrir painel de configurações | Global |
+| `Ctrl + Alt + L` | Ativar / travar modo **Posicionar** | Global |
+| `Esc` | Concluir posicionamento dos cards | Modo Posicionar |
+| `F6` / `F7` *(ou botões do volante)* | Salvar ponto / Retornar ao ponto salvo | Somente Treino por Trecho offline conectado |
 
-- Funciona localmente no **Windows**, sem conta nem assinatura.
-- Mostra os painéis durante a pilotagem e os oculta no menu e na garagem.
-- Permite alternar a visibilidade com **F8**.
-- Guarda suas preferências de posição e aparência.
-- Reúne informações úteis para treino, classificação e corrida; o retorno a um ponto fica restrito ao treino offline compatível.
+---
 
-## Como experimentar
+## Instalação e Requisitos
 
-Este repositório contém o projeto. Se houver um instalador publicado na seção **Releases** deste GitHub, baixe a versão mais recente por lá. Depois, instale o app, abra o Le Mans Ultimate e organize os painéis na tela. As instruções detalhadas estão em [LEIA-ME.txt](LEIA-ME.txt).
+- **Sistema:** Windows 10/11 **64 bits** com **.NET Framework 4.8** (já incluso no Windows atualizado).
+- **No Jogo:** configure o Le Mans Ultimate em modo **Janela sem bordas (*Borderless*)** para que os overlays apareçam sobre a tela.
+- **Instalação rápida:** baixe o instalador `Instalar-Arts-LMU-Overlay-0.12.11.exe` na aba **Releases** (não requer privilégios de administrador e preserva todas as suas configurações anteriores).
 
-**Projeto independente, em evolução.** Não é um produto oficial do Le Mans Ultimate nem possui vínculo com os criadores do jogo. Nomes e marcas de terceiros pertencem a seus respectivos titulares. Imagens de exemplo não representam telemetria de outros pilotos em sessões reais.
+Consulte os guias detalhados na pasta `docs/`:
+- [Guia de Instalação e Compilação](docs/INSTALLATION.md)
+- [Guia de Configuração e Uso](docs/CONFIGURATION.md)
+- [Solução de Problemas (Troubleshooting)](docs/TROUBLESHOOTING.md)
+- [Documentação Mestre do Projeto](docs/MASTER_PROJECT.md)
+- [Histórico de Versões (Changelog)](CHANGELOG.md)
+- [Manual Completo em Texto](LEIA-ME.txt)
+
+---
+
+## Status do Projeto e Compatibilidade
+
+- **Versão atual:** `0.12.11` — código-fonte compilado em C# / `.NET Framework 4.8` com **580 verificações automatizadas** cobrindo parser binário, renderização GDI+, persistência, cálculo de delta, supervisão de protocolo Sector e entrega de chat por voz.
+- **Aviso importante:** testes automatizados validam a lógica interna, mas recursos dependentes de versão do LMU, endpoints locais (`127.0.0.1:6397`), DirectInput e foco de janela devem ser sempre validados em pista após atualizações do jogo.
+
+---
+
+## Créditos e Licenças de Terceiros
+
+Os avisos e licenças dos componentes utilizados estão em [`third_party/`](third_party/):
+- Leitura de memória compartilhada baseada no ecossistema rFactor 2 / LMU Shared Memory (MIT).
+- [Sector](https://github.com/sector-lmu/Sector) `v1.0.0` empacotado sem modificações em `assets/SectorRuntime-1.0.0.zip` (MIT).
+- [NAudio](https://github.com/naudio/NAudio) `2.2.1` para captura local de áudio (MIT) e integração opcional com [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT).
+- Bandeiras [flag-icons](https://github.com/lipis/flag-icons) (MIT) e ícones automotivos [Simple Icons](https://simpleicons.org/) (CC0).
+
+**Projeto independente.** Não é um produto oficial do Le Mans Ultimate nem possui vínculo com Studio 397 ou Motorsport Games. Nomes e marcas pertencem aos seus respectivos titulares.
