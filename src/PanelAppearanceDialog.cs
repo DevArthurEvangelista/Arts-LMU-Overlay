@@ -38,9 +38,10 @@ namespace Arthur.LmuOverlay
             appearance=value;readSize=currentSize;designSize=originalSize;resize=setSize;changed=appearanceChanged;
             Text="Fonte e tamanho • "+name;AccessibleName=Text;StartPosition=FormStartPosition.CenterParent;
             Font=new Font(Theme.BodyFont,10);BackColor=Theme.Background;ForeColor=Theme.Text;
-            FormBorderStyle=FormBorderStyle.FixedDialog;MaximizeBox=MinimizeBox=false;ShowInTaskbar=false;
+            FormBorderStyle=FormBorderStyle.FixedDialog;MaximizeBox=MinimizeBox=false;ShowInTaskbar=true;TopMost=true;
             AutoScaleMode=AutoScaleMode.Dpi;ClientSize=new Size(600,450);
-            MaximumSize=Screen.FromControl(this).WorkingArea.Size;
+            MaximumSize=Screen.PrimaryScreen.WorkingArea.Size;
+            Shown+=delegate { TopMost=true;BringToFront();Activate(); };
             var root=new TableLayoutPanel { Dock=DockStyle.Fill,AutoScroll=true,Padding=new Padding(22),ColumnCount=2,RowCount=0 };
             root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,48));root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,52));Controls.Add(root);
             var intro=SettingsUi.Label(name,32);intro.Font=new Font(Theme.BodyFont,13,FontStyle.Bold);AddWide(root,intro,38);

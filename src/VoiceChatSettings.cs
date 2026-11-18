@@ -212,9 +212,11 @@ namespace Arthur.LmuOverlay
         void BindVoiceKey()
         {
             capturing = true;
+            bool hadTop = TopMost;
+            TopMost = false;
             try
             {
-                using (var dialog = new KeyCapture())
+                using (var dialog = new KeyCapture { TopMost = true })
                 {
                     if (dialog.ShowDialog(this) == DialogResult.OK)
                     {
@@ -230,7 +232,7 @@ namespace Arthur.LmuOverlay
                     }
                 }
             }
-            finally { capturing = false; }
+            finally { capturing = false; TopMost = hadTop; }
         }
 
         void ChooseVoiceFile(TextBox target, string filter, bool executable)

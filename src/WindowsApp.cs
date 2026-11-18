@@ -26,7 +26,7 @@ namespace Arthur.LmuOverlay
     [DataContract]
     public sealed class AppSettings
     {
-        [DataMember] public int SchemaVersion=11;
+        [DataMember] public int SchemaVersion=12;
         [DataMember] public PanelAppearance[] Appearance;
         [DataMember] public int PedalsX=700,PedalsY=700,TableX=24,TableY=100;
         [DataMember] public int PedalsScale=100,TableScale=100,Seconds=PedalDesign.HistorySeconds;
@@ -45,7 +45,7 @@ namespace Arthur.LmuOverlay
         [DataMember] public string LmuExecutablePath="";
         [DataMember(EmitDefaultValue=false)] public int Opacity;
         [DataMember] public bool ShowPedals=true,ShowTable=true,PositionsSet,LinkOpacity,Flags=true,PulseShift=true,SmoothMotion=true;
-        [DataMember] public int ShiftRpm,SteeringRange;
+        [DataMember] public int ShiftRpm,SteeringRange,WheelStyle;
         [DataMember] public int SteeringGain=100;
         // Zero on the physical field keeps the guided calibration's measured
         // scale. A value such as 900 lets a replacement wheel use its full
@@ -86,8 +86,15 @@ namespace Arthur.LmuOverlay
                     if(s.VoiceMicrophone<-1) s.VoiceMicrophone=-1;
                     if(s.VoiceChatKey<0 || s.VoiceChatKey>254 || s.VoiceChatKey==(int)Keys.F12) s.VoiceChatKey=0;
                     s.VoiceChatModifiers&=7;
-                    s.SchemaVersion=11;s.Appearance=PanelAppearance.NormalizeAll(s.Appearance);
+                    if(s.SchemaVersion<12)
+                    {
+                        s.VoiceChatPaste=false;
+                        if(s.Widgets!=null && s.Widgets.Length>4 && s.Widgets[4]!=null && s.Widgets[4].Height>0 && s.Widgets[4].Height<115)
+                            s.Widgets[4].Height=(int)Math.Round(s.Widgets[4].Height*(154.0/90.0));
+                    }
+                    s.SchemaVersion=12;s.Appearance=PanelAppearance.NormalizeAll(s.Appearance);
                     s.DeltaThickness=(int)Format.Clamp(s.DeltaThickness,6,28);s.DeltaReference=DeltaMode.Normalize(s.DeltaReference);s.DeltaOpacity=(int)Format.Clamp(s.DeltaOpacity,0,100);s.DeltaRange=(int)Format.Clamp(s.DeltaRange,1,10);
+                    s.WheelStyle=Arthur.LmuOverlay.WheelStyle.Normalize(s.WheelStyle);
                     s.OnlyMyClass=true;s.Seconds=PedalDesign.HistorySeconds;
                     s.PedalsScale=(int)Format.Clamp(s.PedalsScale,40,200); s.TableScale=(int)Format.Clamp(s.TableScale,40,200);
                     s.PedalOpacity=(int)Format.Clamp(s.PedalOpacity,20,100); s.TableOpacity=(int)Format.Clamp(s.TableOpacity,20,100);
@@ -307,8 +314,10 @@ namespace Arthur.LmuOverlay
             {
                 appearanceDialog=dialog;
                 appearancePanelIndex=index;
+                bool hadTop=TopMost;
+                TopMost=false;
                 try { ApplyVisibility();dialog.ShowDialog(this); }
-                finally { appearanceDialog=null;appearancePanelIndex=-1;ApplyVisibility(); }
+                finally { appearanceDialog=null;appearancePanelIndex=-1;TopMost=hadTop;ApplyVisibility(); }
             }
         }
         void OpacityChanged(bool isPedal,int value)
@@ -323,7 +332,7 @@ namespace Arthur.LmuOverlay
         void ApplySettings()
         {
             Options.HistorySeconds=PedalDesign.HistorySeconds;Options.PedalOpacity=settings.PedalOpacity;Options.TableOpacity=settings.TableOpacity;
-            Options.OnlyMyClass=true;Options.DeltaReference=settings.DeltaReference;Options.DeltaOpacity=settings.DeltaOpacity;Options.DeltaRange=settings.DeltaRange;Options.DeltaThickness=settings.DeltaThickness;
+            Options.OnlyMyClass=true;Options.DeltaReference=settings.DeltaReference;Options.DeltaOpacity=settings.DeltaOpacity;Options.DeltaRange=settings.DeltaRange;Options.DeltaThickness=settings.DeltaThickness;Options.WheelStyle=settings.WheelStyle;
             Options.ShiftRpm=settings.ShiftRpm;Options.SteeringRange=settings.SteeringRange;Options.WheelMaximumRotation=settings.WheelMaximumRotation;Options.CarMaximumRotation=settings.CarMaximumRotation;Options.SteeringGain=settings.SteeringGain;Options.PulseShift=settings.PulseShift;
             pedals.ScaleValue=settings.PedalsScale/100.0;table.ScaleValue=settings.TableScale/100.0;
             pedals.PreferredWidth=settings.PedalsWidth;pedals.PreferredHeight=settings.PedalsHeight;table.PreferredWidth=settings.TableWidth;table.PreferredHeight=settings.TableHeight;
@@ -403,28 +412,28 @@ namespace Arthur.LmuOverlay
         }
         void BindKey()
         {
-            capturing=true;
+            capturing=true;bool hadTop=TopMost;TopMost=false;
             try
             {
-                using(var dialog=new KeyCapture()) if(dialog.ShowDialog(this)==DialogResult.OK)
+                using(var dialog=new KeyCapture { TopMost=true }) if(dialog.ShowDialog(this)==DialogResult.OK)
                 {
                     if(SetVisibilityKey(dialog.SelectedKey,dialog.SelectedModifiers)) Changed();
                     else saved.Text="Essa combinação está em uso. Seu atalho anterior foi mantido; escolha outro.";
                 }
             }
-            finally { capturing=false; }
+            finally { capturing=false;TopMost=hadTop; }
         }
         void CalibrateWheel()
         {
-            capturing=true;
+            capturing=true;bool hadTop=TopMost;TopMost=false;
             try
             {
                 wheel.Refresh();wheelAxes=wheel.Read(Now);
-                using(var dialog=new WheelCalibrationDialog(()=>wheel.Read(Now),Current.SteeringRange>0 ? Current.SteeringRange : settings.CarMaximumRotation))
+                using(var dialog=new WheelCalibrationDialog(()=>wheel.Read(Now),Current.SteeringRange>0 ? Current.SteeringRange : settings.CarMaximumRotation) { TopMost=true })
                     if(dialog.ShowDialog(this)==DialogResult.OK)
                     { settings.WheelCalibration=dialog.Calibration;settings.UsePhysicalWheel=true;physicalWheelCheck.Checked=true;Changed();saved.Text="Volante calibrado. A leitura física foi validada além de 90°."; }
             }
-            finally { capturing=false; }
+            finally { capturing=false;TopMost=hadTop; }
         }
         public void ReportRecoverable(string context,Exception error)
         { AppLog.Write(context,error); }
@@ -494,6 +503,7 @@ namespace Arthur.LmuOverlay
             if(!panelActive && !panels.Any(p=>foreground==p.Handle) && !IsGameForeground(foreground,now))
             { Diagnostic();return; }
             pedals.DrawFrame();extras[4].DrawFrame();
+            if(wheelPreviewBox!=null && wheelPreviewBox.Visible) wheelPreviewBox.Invalidate();
             if(now-lastTable>=.1)
             {
                 lastTable=now;table.FitSize();table.DrawFrame();foreach(var panel in extras) if(panel.Kind!=PanelKind.Delta)panel.DrawFrame();
@@ -508,7 +518,7 @@ namespace Arthur.LmuOverlay
                     foreach(var panel in panels) panel.EnsureVisible();
                     if(voiceOverlay.Visible) Win32.SetWindowPos(voiceOverlay.Handle,new IntPtr(-1),0,0,0,0,0x213);
                 }
-                bool panelTop=panelActive && !learningActive;
+                bool panelTop=panelActive && !learningActive && appearanceDialog==null && !capturing;
                 if(TopMost!=panelTop) TopMost=panelTop;
                 if(learningWindow!=null && !learningWindow.IsDisposed && learningWindow.TopMost!=learningActive) learningWindow.TopMost=learningActive;
                 status.Text=pedals.RenderStatus.Length>0 ? pedals.RenderStatus : table.RenderStatus.Length>0 ? table.RenderStatus : Current.Status;
@@ -569,7 +579,7 @@ namespace Arthur.LmuOverlay
                 for(int i=1;i<=4;i++) Win32.UnregisterHotKey(Handle,i);
                 foreach(var panel in panels) panel.Close();pump.LearningSample=null;pump.Dispose();deltaRepository.Dispose();learning.Dispose();
                 if(learningWindow!=null && !learningWindow.IsDisposed) learningWindow.Close();
-                voiceDictation.Dispose();voiceOverlay.Dispose();countries.Dispose();steeringSetup.Dispose();vehicleDamage.Dispose();penalties.Dispose();wheel.Dispose();tray.Visible=false;tray.Dispose();trayMenu.Dispose();timer.Dispose();saveTimer.Dispose();
+                voiceDictation.Dispose();voiceOverlay.Dispose();if(previewPainter!=null) previewPainter.Dispose();countries.Dispose();steeringSetup.Dispose();vehicleDamage.Dispose();penalties.Dispose();wheel.Dispose();tray.Visible=false;tray.Dispose();trayMenu.Dispose();timer.Dispose();saveTimer.Dispose();
             }
             base.OnFormClosed(e);
         }

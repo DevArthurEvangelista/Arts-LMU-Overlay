@@ -18,16 +18,17 @@ namespace Arthur.LmuOverlay
         public int? StartClassPosition;
         public int? PositionChange { get { return StartClassPosition.HasValue && ClassPosition > 0 ? StartClassPosition.Value-ClassPosition : (int?)null; } }
         public bool IsPlayer, InPits, InGarage;
-        public int Control;
+        public int Control, PitState;
         public int Sector,CountLapFlag=-1;
-        public double LapStart=-1,CurrentSector1=-1,CurrentSector2=-1,LastSector1=-1,LastSector2=-1,Speed=double.NaN;
+        public double LapStart=-1,CurrentSector1=-1,CurrentSector2=-1,LastSector1=-1,LastSector2=-1,BestSector1=-1,BestSector2=-1,BestLapSector1=-1,BestLapSector2=-1,Speed=double.NaN;
         public double LastLap = -1, BestLap = -1, Gap = -1;
-        public double LapDistance=double.NaN,WorldX=double.NaN,WorldZ=double.NaN;
+        public double LapDistance=double.NaN,PathLateral=double.NaN,TrackEdge=double.NaN,WorldX=double.NaN,WorldZ=double.NaN;
     }
 
     public sealed class TyreReading
     {
         public double Temperature=double.NaN,Pressure=double.NaN,Optimal=double.NaN,Remaining=double.NaN;
+        public int SurfaceType;
         public bool Flat,Detached;
     }
 
@@ -52,9 +53,10 @@ namespace Arthur.LmuOverlay
         public double Elapsed, Remaining, Throttle, Brake, Rpm, MaxRpm, Speed, Fuel, Capacity;
         public List<Driver> Drivers = new List<Driver>();
         public double ReadAt, TelemetryElapsed = -1;
-        public int LapNumber,MaxLaps;
+        public int LapNumber,MaxLaps,TrackLimitsSteps,TrackLimitsStepsPerPoint,TrackLimitsStepsPerPenalty;
         public double LapStart=-1,CurrentLap=-1,DeltaBest=double.NaN,TrackLength;
-        public bool LapInvalid;
+        public bool LapInvalid, InPitLane;
+        public string ScoringStream="";
         public TyreReading[] Tyres=new TyreReading[0];
         public VehicleDamage Damage=new VehicleDamage();
         public bool DetachedParts;
@@ -127,6 +129,23 @@ namespace Arthur.LmuOverlay
                 return new string(chars).Trim();
             }
         }
+        static readonly byte[] TrackLimitsTag = Encoding.ASCII.GetBytes("<TrackLimits");
+        const int ScoringStreamSizeOffset = 2184; // SharedMemoryScoringData.scoringStreamSize
+        const int ScoringStreamOffset = 62928;    // SharedMemoryScoringData.scoringStream[65536]
+        const int ScoringStreamMax = 65535;
+        static bool ContainsAscii(byte[] b, int offset, int length, byte[] needle)
+        {
+            int end = offset + length - needle.Length;
+            for (int i = offset; i <= end; i++)
+            {
+                if (b[i] != needle[0]) continue;
+                bool ok = true;
+                for (int j = 1; j < needle.Length; j++)
+                    if (b[i + j] != needle[j]) { ok = false; break; }
+                if (ok) return true;
+            }
+            return false;
+        }
         static int I(byte[] b, int o) { return BitConverter.ToInt32(b, o); }
         static double D(byte[] b, int o) { return BitConverter.ToDouble(b, o); }
         static double F(byte[] b, int o) { return BitConverter.ToSingle(b, o); }
@@ -165,6 +184,15 @@ namespace Arthur.LmuOverlay
             f.ApplicationLocation=b[Layout.AppLocation];
             f.TrackLength=Safe(D(b,sc+Layout.ScoringInfo_mLapDist),100,100000,0);
             f.MaxLaps=(int)Safe(I(b,sc+Layout.ScoringInfo_mMaxLaps),1,10000,0);
+            f.TrackLimitsStepsPerPenalty=b[sc+Layout.ScoringInfo_mTrackLimitsStepsPerPenalty];
+            f.TrackLimitsStepsPerPoint=b[sc+Layout.ScoringInfo_mTrackLimitsStepsPerPoint];
+            ulong rawStreamSize = BitConverter.ToUInt64(b, ScoringStreamSizeOffset);
+            if (rawStreamSize > 0 && rawStreamSize <= ScoringStreamMax)
+            {
+                int streamLen = (int)rawStreamSize;
+                if (ContainsAscii(b, ScoringStreamOffset, streamLen, TrackLimitsTag))
+                    f.ScoringStream = Text(b, ScoringStreamOffset, streamLen);
+            }
             // ApplicationState is optional in LMU. A zero menu field is NOT a veto on valid scoring/telemetry.
             int playerId = int.MinValue;
             var ids = new HashSet<int>();
@@ -185,12 +213,17 @@ namespace Arthur.LmuOverlay
                 d.Control=unchecked((sbyte)b[p+Layout.Car_mControl]);
                 d.InPits = b[p + Layout.Car_mInPits] != 0;
                 d.InGarage=b[p+Layout.Car_mInGarageStall]!=0;
+                d.PitState=b[p+Layout.Car_mPitState];
                 d.Sector=b[p+Layout.Car_mSector];d.CountLapFlag=b[p+Layout.Car_mCountLapFlag];
                 d.LapStart=Safe(D(b,p+Layout.Car_mLapStartET),0,1e8,-1);
                 d.CurrentSector1=Safe(D(b,p+Layout.Car_mCurSector1),.001,1e6,-1);
                 d.CurrentSector2=Safe(D(b,p+Layout.Car_mCurSector2),.001,1e6,-1);
                 d.LastSector1=Safe(D(b,p+Layout.Car_mLastSector1),.001,1e6,-1);
                 d.LastSector2=Safe(D(b,p+Layout.Car_mLastSector2),.001,1e6,-1);
+                d.BestSector1=Safe(D(b,p+Layout.Car_mBestSector1),.001,1e6,-1);
+                d.BestSector2=Safe(D(b,p+Layout.Car_mBestSector2),.001,1e6,-1);
+                d.BestLapSector1=Safe(F(b,p+Layout.Car_mBestLapSector1),.001,1e6,-1);
+                d.BestLapSector2=Safe(F(b,p+Layout.Car_mBestLapSector2),.001,1e6,-1);
                 double svx=D(b,p+Layout.Car_mLocalVel),svy=D(b,p+Layout.Car_mLocalVel+8),svz=D(b,p+Layout.Car_mLocalVel+16);
                 d.Speed=Safe(Math.Sqrt(svx*svx+svy*svy+svz*svz)*3.6,0,1500,double.NaN);
                 d.PitStops = BitConverter.ToInt16(b, p + Layout.Car_mNumPitstops);
@@ -201,6 +234,8 @@ namespace Arthur.LmuOverlay
                 d.Gap = Safe(D(b, p + Layout.Car_mTimeBehindLeader), 0, 1e8, -1);
                 d.LapsBehind = Math.Max(0, I(b, p + Layout.Car_mLapsBehindLeader));
                 d.LapDistance=Safe(D(b,p+Layout.Car_mLapDist),-1000,100000,double.NaN);
+                d.PathLateral=Safe(D(b,p+Layout.Car_mPathLateral),-100000,100000,double.NaN);
+                d.TrackEdge=Safe(D(b,p+Layout.Car_mTrackEdge),-100000,100000,double.NaN);
                 d.WorldX=Safe(D(b,p+Layout.Car_mPos),-1e7,1e7,double.NaN);
                 d.WorldZ=Safe(D(b,p+Layout.Car_mPos+16),-1e7,1e7,double.NaN);
                 if (d.IsPlayer) { playerId = d.Id; f.PlayerClass = d.Class; }
@@ -268,6 +303,8 @@ namespace Arthur.LmuOverlay
             if(f.LapStart>=0 && f.TelemetryElapsed>=f.LapStart)
                 f.CurrentLap=Safe(f.TelemetryElapsed-f.LapStart,0,1e5,-1);
             f.LapInvalid=b[t+Layout.Telem_mLapInvalidated]!=0;
+            f.InPitLane=(I(b,t+Layout.Telem_mCurrentSector) & unchecked((int)0x80000000)) != 0;
+            f.TrackLimitsSteps=b[t+Layout.Telem_mTrackLimitsSteps];
             f.DeltaBest=Safe(D(b,t+Layout.Telem_mDeltaBest),-1e4,1e4,double.NaN);
             f.Tyres=new TyreReading[4];
             f.DetachedParts=b[t+Layout.Telem_mDetached]!=0;
@@ -281,11 +318,14 @@ namespace Arthur.LmuOverlay
                     Pressure=Safe(D(b,w+Layout.Wheel_mPressure),1,1000,double.NaN)/100,
                     Optimal=Safe(F(b,w+Layout.Wheel_mOptimalTemp),1,300,double.NaN),
                     Remaining=Safe(D(b,w+Layout.Wheel_mWear),0,1,double.NaN),
+                    SurfaceType=b[w+Layout.Wheel_mSurfaceType],
                     Flat=b[w+Layout.Wheel_mFlat]!=0,Detached=b[w+Layout.Wheel_mDetached]!=0 };
             }
             f.Throttle = Format.Clamp(throttle, 0, 1); f.Brake = Format.Clamp(brake, 0, 1);
             f.Rpm = rpm;
-            f.PitLimiter=b[t+Layout.Telem_mSpeedLimiter]==1 || b[t+Layout.Telem_mSpeedLimiterActive]==1;
+            // Only mSpeedLimiter indicates the pit speed limiter switch. mSpeedLimiterActive also
+            // pulses during high-RPM engine rev-cutting, which previously caused false LIMITADOR flashes.
+            f.PitLimiter = b[t + Layout.Telem_mSpeedLimiter] != 0;
             var tyreDriver=f.Drivers.FirstOrDefault(d=>d.Id==I(b,t+Layout.Telem_mID));
             if(tyreDriver!=null)
             {

@@ -95,7 +95,7 @@ partial class Checks
         Assert(f.PitLimiter && player.Penalties==2 && Format.Penalty(player)=="2 PEN","native limiter and pending penalty count by player ID");
         Assert(player.CarName=="Ferrari 296 GT3" && player.TyreFront=="Medium" && player.TyreRear=="Wet" && player.TyreSource=="telemetria","native own-car identity and compounds");
         b[Telem(2,Layout.Telem_mSpeedLimiter)]=0;b[Telem(2,Layout.Telem_mSpeedLimiterActive)]=1;
-        Assert(LmuParser.Parse(b,false).PitLimiter,"alternate native limiter-active flag");
+        Assert(!LmuParser.Parse(b,false).PitLimiter,"rev-cut / active flag without pit limiter switch engaged never flashes false LIMITADOR");
         b[Telem(2,Layout.Telem_mSpeedLimiterActive)]=0;b[Telem(0,Layout.Telem_mSpeedLimiter)]=1;
         Assert(!LmuParser.Parse(b,false).PitLimiter,"another car limiter cannot tint the local gear");
         Assert(PenaltyJson("{\"messageType\":\"ACK\",\"body\":{\"ok\":true}}") == null,"websocket acknowledgements with non-list bodies ignored");

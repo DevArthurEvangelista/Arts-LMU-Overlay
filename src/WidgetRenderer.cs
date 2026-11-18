@@ -8,7 +8,7 @@ namespace Arthur.LmuOverlay
     public sealed partial class Painter
     {
         public static Size WidgetSize(PanelKind kind)
-        { return kind==PanelKind.Delta ? new Size(460,90) : kind==PanelKind.TrackMap ? new Size(340,310) : kind==PanelKind.Tyres ? new Size(420,402) : new Size(320,282); }
+        { return kind==PanelKind.Delta ? new Size(460,154) : kind==PanelKind.TrackMap ? new Size(340,310) : kind==PanelKind.Tyres ? new Size(420,402) : new Size(320,282); }
         void WidgetHeader(Graphics g,string title,int width,string note)
         {
             Box(g,Theme.Rpm,15,15,3,17,1.5f);

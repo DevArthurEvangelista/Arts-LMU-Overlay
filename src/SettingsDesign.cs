@@ -43,8 +43,18 @@ namespace Arthur.LmuOverlay
             foreach(Control c in Controls) c.Width=width;
         }
     }
+    internal sealed class WheelPreviewControl : Control
+    {
+        public WheelPreviewControl()
+        {
+            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+            TabStop = false;
+        }
+    }
     public sealed partial class Controller
     {
+        Painter previewPainter;
+        Control wheelPreviewBox;
         void PageHeading(SettingsPage page,string title,string description)
         {
             var heading=Label(title,39);heading.Font=new Font(Theme.DisplayFont,23,FontStyle.Bold);heading.Margin=new Padding(0,0,0,3);page.Controls.Add(heading);
@@ -132,7 +142,32 @@ namespace Arthur.LmuOverlay
         }
         void BuildDrivingPage(SettingsPage page)
         {
-            PageHeading(page,"Volante e motor","Ajuste a direção e o ponto de troca para o seu equipamento.");
+            PageHeading(page,"Volante e motor","Ajuste a direção, o estilo visual do volante e o ponto de troca.");
+            var styleCard=new SettingsCard { Height=142,Margin=new Padding(0,0,0,16) };page.Controls.Add(styleCard);
+            var styleGrid=new TableLayoutPanel { Dock=DockStyle.Fill,ColumnCount=2,RowCount=3,BackColor=Theme.Surface,Margin=new Padding(0) };
+            styleGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));styleGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,124));
+            styleGrid.RowStyles.Add(new RowStyle(SizeType.Absolute,30));styleGrid.RowStyles.Add(new RowStyle(SizeType.Absolute,40));styleGrid.RowStyles.Add(new RowStyle(SizeType.Percent,100));
+            styleCard.Controls.Add(styleGrid);
+            var styleTitle=Label("Visual do volante no overlay",30);styleTitle.Font=new Font(Theme.BodyFont,12,FontStyle.Bold);styleTitle.Dock=DockStyle.Fill;styleGrid.Controls.Add(styleTitle,0,0);
+            var styleSelect=SettingsUi.Select("Estilo visual do volante");styleSelect.Items.AddRange(WheelStyle.Names);
+            styleSelect.SelectedIndex=WheelStyle.Normalize(settings.WheelStyle);styleSelect.Width=360;styleSelect.Margin=new Padding(0,4,12,0);
+            styleGrid.Controls.Add(styleSelect,0,1);
+            var styleNote=Label("Escolha o modelo exibido no painel de pedais. Gire seu volante físico para testar a prévia ao lado.",40);
+            styleNote.ForeColor=Theme.Muted;styleNote.Font=new Font(Theme.BodyFont,9);styleNote.Dock=DockStyle.Fill;styleGrid.Controls.Add(styleNote,0,2);
+            previewPainter=new Painter();
+            wheelPreviewBox=new WheelPreviewControl { Dock=DockStyle.Fill,BackColor=Theme.Background,Margin=new Padding(6,2,0,2) };
+            wheelPreviewBox.Paint+=delegate(object sender,PaintEventArgs e)
+            {
+                e.Graphics.SmoothingMode=SmoothingMode.AntiAlias;
+                using(var border=new Pen(Theme.Grid,1)) e.Graphics.DrawRectangle(border,0,0,wheelPreviewBox.Width-1,wheelPreviewBox.Height-1);
+                double liveAngle=Display.PhysicalWheel || Display.PhysicalWheelFallback ? Display.PhysicalWheelAngle : Instruments.SteeringDrawing(Display,Options.SteeringRange,Options.SteeringGain,Options.CarMaximumRotation);
+                if(!Format.Finite(liveAngle)) liveAngle=0;
+                int pad=8,side=Math.Max(32,Math.Min(wheelPreviewBox.Width,wheelPreviewBox.Height)-pad*2);
+                previewPainter.DrawWheelPreview(e.Graphics,settings.WheelStyle,new Rectangle((wheelPreviewBox.Width-side)/2,(wheelPreviewBox.Height-side)/2,side,side),liveAngle);
+            };
+            styleGrid.Controls.Add(wheelPreviewBox,1,0);styleGrid.SetRowSpan(wheelPreviewBox,3);
+            styleSelect.SelectedIndexChanged+=delegate { settings.WheelStyle=WheelStyle.Normalize(styleSelect.SelectedIndex);Changed();wheelPreviewBox.Invalidate(); };
+
             var wheelBox=new SettingsCard { Height=182,Margin=new Padding(0,0,0,16) };page.Controls.Add(wheelBox);
             var wheelFlow=new FlowLayoutPanel { Dock=DockStyle.Fill,FlowDirection=FlowDirection.TopDown,WrapContents=false,BackColor=Theme.Surface };
             wheelBox.Controls.Add(wheelFlow);physicalWheelCheck=Check("Usar meu volante físico",settings.UsePhysicalWheel,value=>{settings.UsePhysicalWheel=value;Changed();});wheelFlow.Controls.Add(physicalWheelCheck);

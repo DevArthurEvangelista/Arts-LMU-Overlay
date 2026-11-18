@@ -5,20 +5,20 @@ Unicode true
 !include "FileFunc.nsh"
 
 Name "Arts LMU OVERLAY"
-OutFile "../Instalar-Arts-LMU-Overlay-0.12.11.exe"
+OutFile "../Instalar-Arts-LMU-Overlay-0.13.4.exe"
 InstallDir "$LOCALAPPDATA\Programs\ArthurLMUOverlay"
 InstallDirRegKey HKCU "Software\ArthurLMUOverlay" "InstallDirectory"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma
 BrandingText "Arts LMU OVERLAY"
 ShowInstDetails show
-VIProductVersion "0.12.11.0"
+VIProductVersion "0.13.4.0"
 VIAddVersionKey /LANG=1046 "ProductName" "Arts LMU OVERLAY"
 VIAddVersionKey /LANG=1046 "CompanyName" "Arthur Gabriel Evangelista Santos"
 VIAddVersionKey /LANG=1046 "FileDescription" "Instalador oficial do Arts LMU OVERLAY para Windows"
-VIAddVersionKey /LANG=1046 "FileVersion" "0.12.11"
-VIAddVersionKey /LANG=1046 "ProductVersion" "0.12.11"
-VIAddVersionKey /LANG=1046 "OriginalFilename" "Instalar-Arts-LMU-Overlay-0.12.11.exe"
+VIAddVersionKey /LANG=1046 "FileVersion" "0.13.4"
+VIAddVersionKey /LANG=1046 "ProductVersion" "0.13.4"
+VIAddVersionKey /LANG=1046 "OriginalFilename" "Instalar-Arts-LMU-Overlay-0.13.4.exe"
 VIAddVersionKey /LANG=1046 "LegalCopyright" "Arts LMU OVERLAY • Arthur"
 
 !define MUI_ICON "../assets/App.ico"
@@ -126,7 +126,7 @@ Section "Arts LMU OVERLAY" SEC_MAIN
   !insertmacro SmoothProgress "Finalizando registro da instalação e preservando preferências..."
   WriteRegStr HKCU "Software\ArthurLMUOverlay" "InstallDirectory" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayName" "Arts LMU OVERLAY"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayVersion" "0.12.11"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayVersion" "0.13.4"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "Publisher" "Arthur Gabriel Evangelista Santos"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArthurLMUOverlay" "DisplayIcon" "$INSTDIR\LMUOverlay.exe,0"

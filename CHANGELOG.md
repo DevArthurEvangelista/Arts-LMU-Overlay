@@ -6,6 +6,70 @@ Todas as mudanças documentadas do projeto estão consolidadas abaixo com base n
 
 ---
 
+## [0.13.4] — 2026-11-18
+
+### Refinamento do `"PROCESSANDO"` Inteligente (Verde vs Amarelo/Laranja/Vermelho)
+- **`TIRE O PÉ` somente quando há ganho de tempo / risco real (`src/DeltaTiming.cs`):**
+  - Se você espalhar na curva e **perder tempo** (ou sair sem ganhar vantagem no Delta), o aviso já abre processando direto em **Verde (`[ ANÁLISE ] PROCESSANDO • OK`)**, **sem pedir para tirar o pé**.
+  - Somente quando há ganho de tempo real no corte ou sinalização preliminar de invalidação é que o processamento abre em **Amarelo, Laranja ou Vermelho (`[ ANÁLISE ] PROCESSANDO • TIRE O PÉ`)**, mudando para `PROCESSANDO • ALIVIANDO` ao soltar o acelerador e caindo ao vivo para **Verde (`PROCESSANDO • OK` → `[ OK ] VOLTA VÁLIDA`)** no exato instante em que o tempo ganho é devolvido.
+
+---
+
+## [0.13.3] — 2026-11-18
+
+### Novidades e Correções de Pista (Modo sem HUD do Jogo)
+- **Aviso `"PROCESSANDO"` em Tempo Real (`src/Core.cs`, `src/DeltaTiming.cs`, `src/DeltaDesign.cs`):**
+  - Detecta em 100 Hz quando o carro ultrapassa os limites da pista com as 4 rodas (`mPathLateral` vs `mTrackEdge` ou superfície fora de pista) e exibe imediatamente **`[ ANÁLISE ] PROCESSANDO • TIRE O PÉ`** em azul-ciano enquanto o pedal do acelerador segue pressionado, mudando ao vivo para **`PROCESSANDO...`** assim que você alivia o pé até sair o veredito oficial do Comissário do LMU.
+  - Quando o Comissário publica `No Further Action` (`Resolution="7"` no `scoringStream`), o aviso muda na mesma hora para **Verde (`[ OK ] VOLTA VÁLIDA` / `SEM PUNIÇÃO`)**.
+- **Separação Fiel entre Treino/Qualy e Corrida + Pontuação Exata 1:1:**
+  - **Treino Livre, Classificação e Warmup:** suprime completamente qualquer exibição de pontos (`PTS`), mostrando apenas a invalidação de volta — exatamente como nas regras oficiais do LMU.
+  - **Corrida:** lê diretamente o fluxo oficial `<TrackLimits WarningPoints="..." CurrentPoints="..." Resolution="...">` do `scoringStream` (e `mTrackLimitsSteps` em passos de `0,25`), exibindo com precisão de duas casas (`0,25`, `0,5`, `0,75`, `1`, `1,25` — sem arredondar `0,25` ou distorcer `1` ponto) tanto o acréscimo do corte quanto o acumulado (`+1 • 1,25/3`), além de anunciar **`DRIVE THROUGH` / `STOP & GO` / `PUNIÇÃO TEMPO`** quando o limite é atingido.
+
+---
+
+## [0.13.2] — 2026-11-17
+
+### Novidades e Correções de Pista
+- **Alertas Dinâmicos de Track Limits e Invalidação de Volta (`src/Core.cs`, `src/DeltaTiming.cs`, `src/DeltaDesign.cs`):**
+  - Exibe alertas coloridos abaixo da barra de Delta conforme a severidade do LMU (**Amarelo** sob análise inicial, **Laranja** quando há acréscimo de pontos `mTrackLimitsSteps`, e **Vermelho** próximo ao limite de punição ou em corte de fim de volta que invalida `ATUAL + PRÓX.` / `PRÓX. INVÁLIDA`).
+  - **Recálculo ao vivo ("tirar o pé"):** se o LMU reavaliar e devolver a validade da volta (`mLapInvalidated` volta para `false`), o aviso muda na mesma hora para **Verde (`[ OK ] VOLTA VÁLIDA`)** por 2,8 s e preserva os setores como válidos.
+  - **Linha de chegada em volta invalidada:** quando uma volta termina invalidada, o resumo `[ VOLTA ]` da linha de chegada não é exibido.
+- **Correção da Cor dos Setores (Roxo / Verde / Amarelo) e Delta Numérico:**
+  - Removida a trava que mantinha a volta marcada como inválida mesmo após o LMU perdoar um *track limit* ao tirar o pé.
+  - Corrigida a leitura do setor 2 de oponentes (evitando subtrair `mBestLapSector2` individual de `mBestLapSector1`, o que gerava referência artificialmente baixa e pintava setores verdes/roxos de amarelo).
+  - Substituído o texto `"PESSOAL"`/`"MELHOR"` na 1ª volta por delta numérico (`-0,000 s`), mantendo sempre dois valores numéricos alinhados.
+
+---
+
+## [0.13.1] — 2026-11-17
+
+### Correções de Validação em Pista
+- **Setores e Volta no Delta muito maiores e com fonte única (`src/DeltaDesign.cs`, `src/WidgetRenderer.cs`):** faixa de setores ampliada (`418 × 50 px`), usando **exatamente a mesma fonte `Consolas` Bold em tamanho grande (`27 px`)** tanto para o tempo de pista (`31.842` / `1:42.318`) quanto para a diferença (`-0.184 s`), além de piso mínimo de legibilidade para cards compactos com `FontPercent` reduzido.
+- **Correção do envio de texto no Realtime Chat do LMU (`src/VoiceChat.cs`, `src/WindowsApp.cs`):** `VoiceChatKeys` agora popula simultaneamente `wVk` e `wScan` no `SendInput` (compatível tanto com DirectInput para abrir/enviar o chat quanto com a caixa de texto Coherent GT do LMU via `WM_KEYDOWN`/`WM_CHAR`), e migra configurações antigas que estavam presas em `Ctrl+V` para digitação direta.
+- **Correção do congelamento ao abrir *Fonte e tamanho* (`src/PanelAppearanceDialog.cs`, `src/WindowsApp.cs`):** resolvido o deadlock de Z-Order em que o painel principal (`TopMost = true`) encobria o diálogo modal `PanelAppearanceDialog` (`TopMost = false`), fazendo a janela parecer travada.
+
+---
+
+## [0.13.0] — 2026-11-17
+
+### Novidades
+- **Avisos Temporários de Setores (`S1`/`S2`/`S3`) e Linha de Chegada no Delta (`src/DeltaTiming.cs`, `src/DeltaDesign.cs`):** ao cruzar cada setor oficial da pista, um selo aparece por 4 s abaixo da barra do Delta com o tempo do setor e o ganho/perda colorido em **Roxo** (melhor da pista na sua classe), **Verde** (seu melhor na sessão) ou **Amarelo** (acima do seu melhor). Na linha de chegada, exibe por 5 s o resumo da volta completa (`MELHOR PISTA` / `SEU MELHOR` / `VOLTA`) + delta + `S3`.
+- **Seletor de Arte do Volante 100% Vetorial (`src/WheelStyles.cs`, `src/SettingsDesign.cs`):** 8 modelos desenhados com *paths* subpixel anti-aliased selecionáveis na aba **Pilotagem > Visual do volante no overlay** com prévia giratória em tempo real:
+  1. `GT Aberto (Padrão Arts)`
+  2. `iRacing Clássico (Minimalista)`
+  3. `Estilo G29 (Couro e Azul)`
+  4. `Estilo G920 (Dark e Prata)`
+  5. `Estilo MOZA / Monza (Fórmula KS/GS)`
+  6. `Estilo Fanatec (ClubSport GT3)`
+  7. `Estilo Thrustmaster (GT Competição)`
+  8. `Estilo PXN (Sport D-Shape)`
+
+### Correções Críticas
+- **Delta Central Espelhado 1:1 com o LMU (`src/DeltaTiming.cs`):** o modo padrão *Melhor da sessão (espelho LMU)* passa a espelhar diretamente o campo nativo `TelemInfoV01.mDeltaBest` calculado pela física do LMU e ignora o filtro exponencial de 60 ms nesse modo, eliminando diferenças para mais ou para menos frente ao delta do próprio jogo. Também adicionada proteção contra falso `0.000` em volta de saída (*outlap*) e extrapolação de 100 Hz para os modos *Melhor pessoal* e *Última volta válida*.
+- **Correção do Falso `LIMITADOR` em RPM Máximo (`src/Core.cs`):** removido `Telem_mSpeedLimiterActive` da condição de `PitLimiter`, pois o motor do LMU pulsa essa flag durante o corte de giro (*rev limiter*) com acelerador em 100%, o que fazia o indicador de marcha piscar amarelo como se o limitador de box estivesse ligado. Agora apenas `Telem_mSpeedLimiter != 0` aciona o `LIMITADOR`.
+
+---
+
 ## [0.12.11] — 2026-11-09 / Consolidado no Git em 2026-11-17
 
 ### Novidades (ciclo `0.12.5` → `0.12.11`)

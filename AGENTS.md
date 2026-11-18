@@ -1,6 +1,6 @@
 # Contexto para Agentes — Arts LMU OVERLAY
 
-Projeto de Arthur Gabriel Evangelista Santos. Responda em português claro. Base atual: versão **0.12.11**, código C# 5 / .NET Framework 4.8 / WinForms e GDI+, alvo Windows x64 (`NAudio 2.2.1` via NuGet). Priorize compatibilidade com Le Mans Ultimate em treino, classificação e corrida e preserve cartões, layouts, fontes, transparência, teclas e posições salvos (`SchemaVersion = 11`). Não confunda testes automatizados com validação real dentro do LMU com hardware físico.
+Projeto de Arthur Gabriel Evangelista Santos. Responda em português claro. Base atual: versão **0.13.4**, código C# 5 / .NET Framework 4.8 / WinForms e GDI+, alvo Windows x64 (`NAudio 2.2.1` via NuGet). Priorize compatibilidade com Le Mans Ultimate em treino, classificação e corrida e preserve cartões, layouts, fontes, transparência, teclas e posições salvos (`SchemaVersion = 12`). Não confunda testes automatizados com validação real dentro do LMU com hardware físico.
 
 ## Interface e comportamento acordados
 

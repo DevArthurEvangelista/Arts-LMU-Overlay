@@ -28,7 +28,7 @@ static class AppearanceUiChecks
         Assert(oldDefault.Save()=="","0.9.1 preferences save as upgrade fixture");
         string upgradeWarning;var upgraded=AppSettings.Load(out upgradeWarning);
         Assert(upgraded.Seconds==10,"legacy history preference migrates to ten seconds");
-        Assert(upgradeWarning=="" && upgraded.SchemaVersion==11 && upgraded.HotkeyKey==(int)Keys.F8 && upgraded.HotkeyModifiers==0,"old standard shortcut migrates once to F8");
+        Assert(upgradeWarning=="" && upgraded.SchemaVersion==12 && upgraded.HotkeyKey==(int)Keys.F8 && upgraded.HotkeyModifiers==0,"old standard shortcut migrates once to F8");
         Assert(upgraded.PositionsSet && upgraded.PedalsX==314 && upgraded.PedalsY==159 && upgraded.PedalsWidth==512 && upgraded.PedalsHeight==190 &&
             upgraded.TableX==77 && upgraded.TableY==90 && upgraded.TableWidth==850 && upgraded.TableHeight==338,"0.9.2 keeps exact saved main-card positions and sizes");
         Assert(upgraded.Widgets.Select((w,i)=>w.X==100+i*80 && w.Y==210+i*50 && w.Width==330+i*20 && w.Height==260+i*10 && w.Visible==(i%2==0)).All(x=>x),"0.9.2 keeps exact optional-card positions, sizes and activation");

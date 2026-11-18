@@ -2,13 +2,13 @@
 
 **Mais informação na pista. Mais clareza para evoluir a cada volta.**
 
-O **Arts LMU OVERLAY** (`v0.12.11`) é um overlay e assistente de telemetria independente para **Le Mans Ultimate** no Windows, pensado para entregar leitura rápida durante a pilotagem, personalização individual por card e ferramentas práticas de evolução de ritmo.
+O **Arts LMU OVERLAY** (`v0.13.4`) é um overlay e assistente de telemetria independente para **Le Mans Ultimate** no Windows, pensado para entregar leitura rápida durante a pilotagem, personalização individual por card e ferramentas práticas de evolução de ritmo.
 
 ### ⬇️ Download Direto (Somente o Instalador `.exe`)
 
 Não é necessário baixar a pasta de código do projeto — clique abaixo para baixar apenas o instalador pronto para Windows x64:
 
-👉 **[Baixar Instalar-Arts-LMU-Overlay-0.12.11.exe](https://github.com/DevArthurEvangelista/Arts-LMU-Overlay/releases/latest/download/Instalar-Arts-LMU-Overlay-0.12.11.exe)** *(ou acesse a [página de Releases](https://github.com/DevArthurEvangelista/Arts-LMU-Overlay/releases/latest))*
+👉 **[Baixar Instalar-Arts-LMU-Overlay-0.13.4.exe](https://github.com/DevArthurEvangelista/Arts-LMU-Overlay/releases/latest/download/Instalar-Arts-LMU-Overlay-0.13.4.exe)** *(ou acesse a [página de Releases](https://github.com/DevArthurEvangelista/Arts-LMU-Overlay/releases/latest))*
 
 > **Nota do Windows ao instalar:** por ser um projeto independente sem certificado comercial pago, na primeira execução o Windows SmartScreen pode exibir *"O Windows protegeu o computador"*. Basta clicar em **Mais informações** → **Executar assim mesmo**.
 
@@ -16,13 +16,15 @@ Não é necessário baixar a pasta de código do projeto — clique abaixo para 
 
 ![Painel de pedais, volante, RPM, marcha e velocidade](docs/Previa-Arts-LMU-Overlay-0.11.0.png)
 
+![Catálogo dos 8 estilos de volantes disponíveis no aplicativo](docs/Catalogo-Volantes-0.13.0.png)
+
 ---
 
 ## Principais Funcionalidades
 
 - **Quadro de Classificação da Classe:** colunas fixas (`POS`, `+/−`, `GER`, `PILOTO / CARRO`, `ÚLTIMA`, `MELHOR`, `PNEU`, `GAP GER.` / `Δ SUA VOLTA`, `PEN.`, `BOX`), líder destacado, vizinhos de pista, bandeiras de nacionalidade, logos de fabricantes, compostos de pneus por cor e penalidades (`DT`, `SG` e tempo).
-- **Pedais, Motor e Volante 1:1:** histórico dos **últimos 10 segundos** de freio e acelerador, barras verticais (freio à esquerda, acelerador à direita), arco circular de RPM com alerta visual de troca de marcha, marcha/limitador de box, velocidade e rotação real do volante físico via DirectInput.
-- **Delta Central Transparente:** barra horizontal limpa com espessura configurável (`6–28 px`) comparando em tempo real contra sua melhor volta da sessão, melhor pessoal salva (por pista/carro/classe) ou última volta válida.
+- **Pedais, Motor e Volante 1:1:** histórico dos **últimos 10 segundos** de freio e acelerador, barras verticais (freio à esquerda, acelerador à direita), arco circular de RPM com alerta visual de troca de marcha, marcha/limitador de box, velocidade, rotação real do volante físico via DirectInput e **8 estilos visuais de volante selecionáveis** (*GT Aberto*, *iRacing Clássico*, *G29*, *G920*, *MOZA*, *Fanatec*, *Thrustmaster* e *PXN*).
+- **Delta Central Transparente (Espelho LMU):** barra horizontal limpa com espessura configurável (`6–28 px`) espelhando em tempo real o delta nativo do próprio LMU (`mDeltaBest`) na sessão, ou comparando contra sua melhor pessoal salva (por pista/carro/classe) e última volta válida.
 - **Cards Opcionais Independentes:**
   - **Pneus e Danos:** temperatura superficial, pressão (`bar`), desgaste restante, avisos de pneu furado/roda solta e condição de suspensão (`SUSP.`) e aerodinâmica geral (`AERO`).
   - **Lap Timer:** volta atual, última, melhor, previsão estimada e voltas concluídas.
@@ -64,7 +66,7 @@ Consulte os guias detalhados na pasta `docs/`:
 
 ## Status do Projeto e Compatibilidade
 
-- **Versão atual:** `0.12.11` — código-fonte compilado em C# / `.NET Framework 4.8` com **580 verificações automatizadas** cobrindo parser binário, renderização GDI+, persistência, cálculo de delta, supervisão de protocolo Sector e entrega de chat por voz.
+- **Versão atual:** `0.13.0` — código-fonte compilado em C# / `.NET Framework 4.8` com **616 verificações automatizadas** cobrindo parser binário, renderização GDI+, persistência, cálculo/espelho de delta, supervisão de protocolo Sector, catálogo de volantes e entrega de chat por voz.
 - **Aviso importante:** testes automatizados validam a lógica interna, mas recursos dependentes de versão do LMU, endpoints locais (`127.0.0.1:6397`), DirectInput e foco de janela devem ser sempre validados em pista após atualizações do jogo.
 
 ---

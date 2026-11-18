@@ -7,7 +7,7 @@ partial class Checks
 {
     static void Version01211()
     {
-        Assert(AppInfo.Version == "0.12.11" && AppInfo.AssemblyVersion == "0.12.11.0", "version metadata matches 0.12.11");
+        Assert(AppInfo.Version == "0.13.4" && AppInfo.AssemblyVersion == "0.13.4.0", "version metadata matches 0.13.4");
 
         string dictError = null;
         using (var dictation = new VoiceDictation { ExecutablePath = "ausente-whisper.exe", ModelPath = "ausente-model.bin" })

@@ -1,3 +1,14 @@
+ATUALIZAÇÃO 0.13.4 / 0.13.3
+- Aviso "PROCESSANDO" inteligente por cor (Verde vs Amarelo / Laranja / Vermelho): se você escapar da pista perdendo tempo (sem ganho no Delta), já processa em VERDE ([ ANÁLISE ] PROCESSANDO • OK) sem mandar tirar o pé; só pede TIRE O PÉ quando o corte gerou ganho de tempo ou risco real (Amarelo / Laranja / Vermelho), voltando para VERDE assim que você devolve o tempo ganho.
+- Regras fiéis por sessão e pontos 1:1: em Treino Livre e Classificação não exibe pontos de limite de pista (apenas invalidação de volta); na Corrida lê diretamente os pontos exatos do Comissário do LMU (passos reais de 0,25 / 0,5 / 0,75 / 1, ex.: +1 • 1,25/3) e anuncia punições aplicadas (DRIVE THROUGH, STOP & GO, PUNIÇÃO TEMPO).
+
+ATUALIZAÇÃO 0.13.0
+- Delta central espelhado 1:1 com o HUD do Le Mans Ultimate + Avisos de Setor e Volta:
+  * No modo "Melhor da sessão (espelho LMU)", o card lê diretamente o mDeltaBest nativo de alta frequência publicado pela física do LMU (sem atraso de suavização).
+  * Ao cruzar Setor 1 (S1) e Setor 2 (S2), exibe por 4 segundos abaixo da barra o tempo do setor e a diferença colorida em ROXO (melhor da pista na sua classe), VERDE (seu melhor na sessão) ou AMARELO (acima do seu melhor). Ao cruzar a Linha de Chegada, exibe por 5 segundos o resultado da volta/delta (Melhor Pista / Seu Melhor / Volta) junto do S3.
+- Correção do falso alerta de LIMITADOR em giro máximo: corrigido o bug em que estourar o limite de RPM no acelerador fazia o quadro de marcha piscar como se o limitador de velocidade dos boxes estivesse ativo (agora apenas mSpeedLimiter do limitador real aciona o indicador).
+- Seletor de arte do volante (8 modelos): escolha na aba Pilotagem > Visual do volante entre GT Aberto (Padrão Arts), iRacing Clássico (Minimalista), Estilo G29, Estilo G920, Estilo MOZA / Monza, Estilo Fanatec, Estilo Thrustmaster e Estilo PXN, com prévia giratória ao vivo.
+
 ATUALIZAÇÃO 0.12.11
 - Chat por voz no LMU com modelo Whisper local (experimental): segure um botão do volante ou uma tecla vinculada na pista, fale e solte para transcrever localmente e enviar ao Realtime Chat do LMU (via digitação automática ou colagem Ctrl+V), com indicador visual na pista ("Ouvindo", "Transcrevendo", "Enviando").
 - Visibilidade e foco aprimorados: todos os cards ocultam imediatamente quando o processo Le Mans Ultimate é encerrado; durante o ajuste de aparência de um card com o jogo na pista, o card permanece visível para pré-visualização em tempo real; proteção reforçada no Alt+Tab para não sobrepor outras janelas do Windows.

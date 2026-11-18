@@ -154,9 +154,9 @@ partial class Checks
         var retry=new PresentationRetry();retry.Failed(1);Assert(!retry.Ready(1.1) && retry.Ready(1.21),"transient display error schedules retry");
         for(int i=0;i<50;i++) retry.Failed(2);Assert(retry.RetryAt<=4,"display retry delay stays bounded");retry.Succeeded();Assert(retry.Ready(4) && retry.Failures==0,"display resumes after recovery");
         Version05Checks(bytes);RecoverTelemetry(bytes);RecoverCountries(bytes);
-        Version08(bytes);Version09();Version092(bytes);Version010(bytes);DamageChecks(bytes);Version012();Version0121();Version0122();Version0123();Version01211();
+        Version08(bytes);Version09();Version092(bytes);Version010(bytes);DamageChecks(bytes);Version012();Version0121();Version0122();Version0123();Version01211();Version0130();
         Console.WriteLine("PASS: "+count+" assertions using SDK binary fixtures, session scenarios and real background workers.");
-        if(args.Length>1) { Render(args[1]);Render08(args[1]);Render09(args[1]);RenderLearning(args[1]);RenderDamage(args[1]);Render011(args[1]);Render012(args[1]); }
+        if(args.Length>1) { Render(args[1]);Render08(args[1]);Render09(args[1]);RenderLearning(args[1]);RenderDamage(args[1]);Render011(args[1]);Render012(args[1]);Render0130(args[1]); }
     }
     sealed class TransientReader : ITelemetryReader
     {

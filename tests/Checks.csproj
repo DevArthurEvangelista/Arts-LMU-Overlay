@@ -20,6 +20,7 @@
     <Compile Include="V0122Checks.cs"/>
     <Compile Include="V0123Checks.cs"/>
     <Compile Include="V01211Checks.cs"/>
+    <Compile Include="V0130Checks.cs"/>
     <Compile Include="PreviewData.cs"/>
     <Compile Include="../src/*.cs" Exclude="../src/WindowsApp.cs;../src/DeltaSettings.cs;../src/SectorSettings.cs;../src/TrainingButtonsSettings.cs;../src/VoiceChatSettings.cs;../src/VoiceStatusOverlay.cs;../src/SettingsDesign.cs;../src/OverlayWindow.cs;../src/AssemblyInfo.cs;../src/AppLog.cs;../src/WheelCalibrationDialog.cs;../src/PanelAppearanceDialog.cs;../src/LearningWindow.cs"/>
     <EmbeddedResource Include="../assets/Flags.zip" LogicalName="Flags.zip"/>

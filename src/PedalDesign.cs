@@ -81,7 +81,7 @@ namespace Arthur.LmuOverlay
             InputColumn(g,454,f.Throttle,Theme.Throttle,live);
             Text(g,shift ? "TROQUE" : "RPM",498,14,140,27,11,shift ? Theme.Brake : Theme.Muted,true,false,StringAlignment.Center,.09f);
             RpmArc(g,f,pulse);
-            Wheel(g,Instruments.SteeringDrawing(f,o.SteeringRange,o.SteeringGain,o.CarMaximumRotation),PedalDesign.WheelX,PedalDesign.WheelY);
+            Wheel(g,Instruments.SteeringDrawing(f,o.SteeringRange,o.SteeringGain,o.CarMaximumRotation),PedalDesign.WheelX,PedalDesign.WheelY,o.WheelStyle);
             double angle=Instruments.SteeringAngle(f,o.SteeringRange,o.SteeringGain,o.CarMaximumRotation);
             string degrees=Format.Finite(angle) ? (angle>1 ? "+" : angle< -1 ? "−" : "")+Math.Abs(angle).ToString("0")+"°" : "—";
             Text(g,degrees,510,183,116,29,18,Theme.Muted,true,true,StringAlignment.Center);

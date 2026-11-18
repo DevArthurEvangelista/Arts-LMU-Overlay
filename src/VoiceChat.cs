@@ -177,7 +177,7 @@ namespace Arthur.LmuOverlay
             if (paste) copy(message);
             stage("Abrindo chat");
             if (!(await Tap(13, false, focused, key, delay))) return false;
-            await delay(600);
+            await delay(450);
             if (!focused())
             {
                 stage("Cancelado após abrir: jogo sem foco");
@@ -189,7 +189,7 @@ namespace Arthur.LmuOverlay
                 try
                 {
                     key(17, false, false);
-                    await delay(60);
+                    await delay(50);
                     if (!(await Tap(86, false, focused, key, delay))) return false;
                 }
                 finally { key(17, true, false); }
@@ -214,7 +214,7 @@ namespace Arthur.LmuOverlay
                             if ((mapped & 0x200) != 0) modifiers.Add(17);
                             if ((mapped & 0x400) != 0) modifiers.Add(18);
                             foreach (ushort item in modifiers) key(item, false, false);
-                            if (modifiers.Count > 0) await delay(40);
+                            if (modifiers.Count > 0) await delay(20);
                         }
                         if (!(await Tap(mapped < 0 ? (ushort)message[j] : (ushort)(mapped & 0xFF), mapped < 0, focused, key, delay)))
                             return false;
@@ -226,7 +226,7 @@ namespace Arthur.LmuOverlay
                     }
                 }
             }
-            await delay(350);
+            await delay(220);
             stage("Confirmando com Enter");
             if (!(await Tap(13, false, focused, key, delay))) return false;
             stage("Sequência concluída; recebimento no jogo não verificado");
@@ -236,13 +236,15 @@ namespace Arthur.LmuOverlay
         static async Task<bool> Tap(ushort code, bool unicode, Func<bool> focused, Action<ushort, bool, bool> key, Func<int, Task> delay)
         {
             if (!focused()) return false;
+            int holdMs = (!unicode && code == 13) ? 65 : 24;
+            int gapMs = (!unicode && code == 13) ? 40 : 16;
             try
             {
                 key(code, false, unicode);
-                await delay(70);
+                await delay(holdMs);
             }
             finally { key(code, true, unicode); }
-            await delay(40);
+            await delay(gapMs);
             return focused();
         }
     }
@@ -294,9 +296,12 @@ namespace Arthur.LmuOverlay
         static void Key(ushort code, bool up, bool unicode, IntPtr layout)
         {
             uint scan = unicode ? code : MapVirtualKeyEx(code, 4u, layout);
-            if (scan == 0)
-                throw new InvalidOperationException("Tecla sem mapeamento no teclado ativo: " + code);
-            uint flags = (uint)((unicode ? 4 : 8) | (up ? 2 : 0));
+            if (!unicode && scan == 0)
+                scan = MapVirtualKeyEx(code, 0u, layout);
+            // Send BOTH virtual-key (wVk) and hardware scan code (wScan) without KEYEVENTF_SCANCODE
+            // when unicode==false, matching AutoHotkey SendInput so DirectInput (Enter) AND LMU's
+            // Coherent GT UI text input box (WM_KEYDOWN / WM_CHAR) both process every keystroke.
+            uint flags = (uint)((unicode ? 4 : 0) | (up ? 2 : 0));
             if (!unicode && (scan & 0xFF00) == 0xE000) flags |= 1;
             var v = new INPUT
             {
@@ -305,6 +310,7 @@ namespace Arthur.LmuOverlay
                 {
                     ki = new KEYBDINPUT
                     {
+                        vk = unicode ? (ushort)0 : code,
                         scan = (ushort)(unicode ? scan : (scan & 0xFF)),
                         flags = flags
                     }

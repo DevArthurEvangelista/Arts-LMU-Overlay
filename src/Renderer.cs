@@ -37,7 +37,7 @@ namespace Arthur.LmuOverlay
     }
     public sealed class ViewOptions
     {
-        public int DeltaReference,DeltaOpacity,DeltaRange=2,DeltaThickness=16;
+        public int DeltaReference,DeltaOpacity,DeltaRange=2,DeltaThickness=16,WheelStyle;
         public double HistorySeconds=PedalDesign.HistorySeconds, ShiftRpm, SteeringRange, WheelMaximumRotation, CarMaximumRotation;
         public int PedalOpacity=92, TableOpacity=92, SteeringGain=100;
         public bool PulseShift=true;
@@ -59,7 +59,7 @@ namespace Arthur.LmuOverlay
         readonly Stream brandStream;
         readonly ZipArchive brandArchive;
         readonly Dictionary<string,Image> brands=new Dictionary<string,Image>();
-        Bitmap wheelArtwork;
+        readonly Bitmap[] wheelArtworks=new Bitmap[WheelStyle.Count];
         public Painter()
         {
             flagStream=Assembly.GetExecutingAssembly().GetManifestResourceStream("Flags.zip");
@@ -300,21 +300,16 @@ namespace Arthur.LmuOverlay
             Color c=brake ? Theme.Brake : Theme.Throttle;
             using(var p=new Pen(c,2.5f)) { p.LineJoin=LineJoin.Round; p.StartCap=p.EndCap=LineCap.Round; g.DrawLines(p,pts); }
         }
-        void Wheel(Graphics g,double angle,float cx=571,float cy=153)
+        void Wheel(Graphics g,double angle,float cx=571,float cy=153,int style=0)
         {
-            if(wheelArtwork==null)
-            {
-                wheelArtwork=new Bitmap(320,320,System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
-                using(var art=Graphics.FromImage(wheelArtwork))
-                { art.Clear(Color.Transparent);Prepare(art);art.ScaleTransform(2,2);art.TranslateTransform(80-571,80-153);RenderWheelArtwork(art); }
-            }
+            var bmp=GetWheelBitmap(style);
             var state=g.Save();float sx,sy;
             using(var matrix=g.Transform) { var m=matrix.Elements;sx=Math.Abs(m[0]);sy=Math.Abs(m[3]); }
             g.TranslateTransform(cx,cy);float uniform=Math.Min(sx,sy);
             if(sx>0 && sy>0) g.ScaleTransform(uniform/sx,uniform/sy);
             if(Format.Finite(angle)) g.RotateTransform((float)angle);
             g.InterpolationMode=InterpolationMode.HighQualityBicubic;
-            g.DrawImage(wheelArtwork,-80,-80,160,160);g.Restore(state);
+            g.DrawImage(bmp,-80,-80,160,160);g.Restore(state);
         }
         void RenderWheelArtwork(Graphics g)
         {
@@ -394,7 +389,7 @@ namespace Arthur.LmuOverlay
         }
         public void Dispose()
         {
-            if(wheelArtwork!=null) wheelArtwork.Dispose();
+            foreach(var w in wheelArtworks) if(w!=null) w.Dispose();
             foreach(var f in fonts.Values) f.Dispose(); foreach(var b in brushes.Values) b.Dispose();
             foreach(var f in flags.Values) if(f!=null) f.Dispose();
             if(flagArchive!=null) flagArchive.Dispose(); if(flagStream!=null) flagStream.Dispose();
